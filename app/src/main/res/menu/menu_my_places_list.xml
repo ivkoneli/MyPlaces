@@ -1,0 +1,27 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="elfak.mosis.myplaces.MainActivity">
+    <item
+        android:id="@+id/show_map_item"
+        android:title="@string/show_map"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/baseline_map_white_24dp"
+        />
+    <item
+        android:id="@+id/new_place_item"
+        android:title="@string/new_place"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/baseline_add_white_24dp"
+        />
+    <item
+        android:id="@+id/about_item"
+        android:title="@string/about"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        android:icon="@drawable/baseline_info_outline_white_24dp"
+        />
+
+</menu>
