@@ -41,7 +41,7 @@
     <fragment
         android:id="@+id/EditFragment"
         android:name="elfak.mosis.myplaces.EditFragment"
-        android:label="@string/edit_fragment_label"
+        android:label="@string/editmyplace_add_label"
         tools:layout="@layout/fragment_edit">
 
         <action

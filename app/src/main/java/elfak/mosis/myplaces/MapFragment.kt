@@ -2,10 +2,15 @@ package elfak.mosis.myplaces
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -17,6 +22,7 @@ import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
@@ -60,10 +66,70 @@ class MapFragment : Fragment() {
         }
     }
 
+    private fun addMyPlaceMarkers() {
+        map.overlays.removeAll { it is Marker }
+
+        myPlacesViewModel.myPlacesList.forEach { place ->
+            val marker = Marker(map)
+
+            marker.position = GeoPoint(place.latitude.toDouble(), place.longitude.toDouble())
+            marker.title = place.name
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            marker.subDescription = when (place.type) {
+                "Pokemon" -> "Wild Pokémon"
+                "Pokestop" -> "XP Station"
+                "Healing" -> "Healing Station"
+                else -> ""
+            }
+
+            // 👉 IKONICA PO TIPU
+            marker.icon = when (place.type) {
+                "Pokemon" -> scaledBitmapIcon(R.drawable.poke_stop, 20)
+                "Pokestop" -> scaledBitmapIcon(R.drawable.poke_xp, 20)
+                "Healing" -> scaledBitmapIcon(R.drawable.poke_heal, 20)
+                else -> scaledBitmapIcon(R.drawable.poke_stop, 20)
+            }
+
+            marker.setOnMarkerClickListener { m, _ ->
+                if (locationViewModel.isSettingLocation) { // block click while setting location
+                    false //
+                } else {
+                    m.showInfoWindow()
+                    myPlacesViewModel.selected = place
+                    findNavController().navigate(R.id.action_MapFragment_to_EditFragment)
+                    true
+                }
+            }
+            map.overlays.add(marker)
+        }
+        map.invalidate()
+    }
+
+    private fun scaledBitmapIcon(
+        @DrawableRes resId: Int,
+        sizeDp: Int
+    ): Drawable {
+        val drawable = ContextCompat.getDrawable(requireContext(), resId)!!
+        val bitmap = (drawable as BitmapDrawable).bitmap
+
+        val density = resources.displayMetrics.density
+        val sizePx = (sizeDp * density).toInt()
+
+        val scaledBitmap = Bitmap.createScaledBitmap(
+            bitmap,
+            sizePx,
+            sizePx,
+            true
+        )
+
+        return BitmapDrawable(resources, scaledBitmap)
+    }
+
+
     private fun setupMap(){
         var startPoint:GeoPoint = GeoPoint(43.3289 , 21.8958)
         map.controller.setZoom(15.0)
-        if(locationViewModel.setLocation){
+        if(locationViewModel.isSettingLocation){
             setOnMapClickOverlay()
         }
         else {
@@ -74,6 +140,8 @@ class MapFragment : Fragment() {
             }
         }
         map.controller.animateTo(startPoint)
+        addMyPlaceMarkers() // dodaje sve markere iz liste
+
     }
 
     private fun setMyLocationOverlay()
@@ -103,23 +171,31 @@ class MapFragment : Fragment() {
         }
     }
 
-    private fun setOnMapClickOverlay(){
-        var recive = object:MapEventsReceiver{
+    private fun setOnMapClickOverlay() {
+        map.overlays.removeAll { it is MapEventsOverlay }
+
+        if (!locationViewModel.isSettingLocation) return
+
+        val receiver = object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
-                var lon = p?.longitude.toString()
-                var lat = p?.latitude.toString()
-                locationViewModel.setLocation(lon,lat)
+                p ?: return false
+
+                locationViewModel.setLocation(
+                    p.longitude.toString(),
+                    p.latitude.toString()
+                )
+
+                locationViewModel.isSettingLocation = false
                 findNavController().popBackStack()
                 return true
             }
 
-            override fun longPressHelper(p: GeoPoint?): Boolean {
-                return false
-            }
+            override fun longPressHelper(p: GeoPoint?): Boolean = false
         }
-        var overlayEvents = MapEventsOverlay(recive)
-        map.overlays.add(overlayEvents)
+
+        map.overlays.add(0, MapEventsOverlay(receiver))
     }
+
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)

@@ -47,7 +47,7 @@ class ListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val myPlacesList: ListView = requireView().findViewById<ListView>(R.id.my_places_list)
-        myPlacesList.adapter = ArrayAdapter<MyPlace>( view.context, android.R.layout.simple_list_item_1,myPlacesViewModel.myPLacesList)
+        myPlacesList.adapter = ArrayAdapter<MyPlace>( view.context, android.R.layout.simple_list_item_1,myPlacesViewModel.myPlacesList)
         myPlacesList.setOnItemClickListener( object  : AdapterView.OnItemClickListener {
             override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 var myPlace:MyPlace= p0?.adapter?.getItem(p2) as MyPlace
@@ -58,7 +58,7 @@ class ListFragment : Fragment() {
         myPlacesList.setOnCreateContextMenuListener( object : View.OnCreateContextMenuListener {
             override fun onCreateContextMenu( menu : ContextMenu , v: View?, menuInfo:ContextMenuInfo) {
                 val info = menuInfo as AdapterContextMenuInfo
-                val myPlace:MyPlace = myPlacesViewModel.myPLacesList[info.position]
+                val myPlace:MyPlace = myPlacesViewModel.myPlacesList[info.position]
                 menu.setHeaderTitle(myPlace.name)
                 menu.add(0, 1, 1, "View place")
                 menu.add(0, 2, 2, "Edit place")
@@ -72,17 +72,17 @@ class ListFragment : Fragment() {
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val info = item.menuInfo as AdapterContextMenuInfo
         if (item.itemId === 1){
-            myPlacesViewModel.selected = myPlacesViewModel.myPLacesList[info.position]
+            myPlacesViewModel.selected = myPlacesViewModel.myPlacesList[info.position]
             this.findNavController().navigate(R.id.action_ListFragment_to_ViewFragment)
         }else if ( item.itemId === 2){
-            myPlacesViewModel.selected = myPlacesViewModel.myPLacesList[info.position]
+            myPlacesViewModel.selected = myPlacesViewModel.myPlacesList[info.position]
             this.findNavController().navigate(R.id.action_ListFragment_to_EditFragment)
         }else if (item.itemId === 3) {
-            myPlacesViewModel.myPLacesList.removeAt(info.position)
+            myPlacesViewModel.myPlacesList.removeAt(info.position)
             val myplacesList: ListView = requireView().findViewById<ListView>(R.id.my_places_list)
-            myplacesList.adapter = this@ListFragment.context?.let {ArrayAdapter<MyPlace>(it , android.R.layout.simple_list_item_1, myPlacesViewModel.myPLacesList) }
+            myplacesList.adapter = this@ListFragment.context?.let {ArrayAdapter<MyPlace>(it , android.R.layout.simple_list_item_1, myPlacesViewModel.myPlacesList) }
         }else if (item.itemId === 4){
-            myPlacesViewModel.selected = myPlacesViewModel.myPLacesList[info.position]
+            myPlacesViewModel.selected = myPlacesViewModel.myPlacesList[info.position]
             this.findNavController().navigate(R.id.action_ListFragment_to_MapFragment)
         }
         return super.onContextItemSelected(item)
