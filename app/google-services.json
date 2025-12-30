@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "481673268700",
+    "project_id": "pokemon-go-c8e32",
+    "storage_bucket": "pokemon-go-c8e32.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:481673268700:android:77bc2fe43927279c859319",
+        "android_client_info": {
+          "package_name": "elfak.mosis.myplaces"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMc-thp_rR0n2J80oN3mcfkKX60QP1sms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

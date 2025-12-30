@@ -68,4 +68,15 @@
             android:id="@+id/action_ViewFragment_to_ListFragment"
             app:destination="@+id/ListFragment"/>
     </fragment>
+    <fragment
+        android:id="@+id/LeaderboardFragment"
+        android:name="elfak.mosis.myplaces.LeaderboardFragment"
+        android:label="Leaderboard"
+        tools:layout="@layout/fragment_leaderboard" />
+
+    <fragment
+        android:id="@+id/ProfileFragment"
+        android:name="elfak.mosis.myplaces.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
 </navigation>

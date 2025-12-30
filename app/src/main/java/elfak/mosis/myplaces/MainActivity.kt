@@ -12,6 +12,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.navigation.NavController
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import elfak.mosis.myplaces.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -30,23 +32,42 @@ class MainActivity : AppCompatActivity() {
 
         navController = findNavController(R.id.nav_host_fragment_content_main)
         appBarConfiguration = AppBarConfiguration(navController.graph)
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+
+                R.id.nav_home -> {
+                    navController.navigate(R.id.HomeFragment)
+                    true
+                }
+
+                R.id.nav_list -> {
+                    navController.navigate(R.id.ViewFragment)
+                    true
+                }
+
+                R.id.nav_map -> {
+                    navController.navigate(R.id.MapFragment)
+                    true
+                }
+
+                R.id.nav_leaderboard -> {
+                    navController.navigate(R.id.LeaderboardFragment)
+                    true
+                }
+
+                R.id.nav_profile -> {
+                    navController.navigate(R.id.ProfileFragment)
+                    true
+                }
+
+                else -> false
+            }
+        }
+
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        navController.addOnDestinationChangedListener{controller , destination , arguments ->
-        if (destination.id == R.id.EditFragment || destination.id==R.id.ViewFragment)
-            binding.fab.hide()
-        else
-            binding.fab.hide()
-        }
-
-        binding.fab.setOnClickListener { view ->
-            if(navController.currentDestination?.id == R.id.HomeFragment)
-                navController.navigate(R.id.action_HomeFragment_to_EditFragment)
-            else if(navController.currentDestination?.id == R.id.ListFragment)
-                navController.navigate(R.id.action_ListFragment_to_EditFragment)
-            else if(navController.currentDestination?.id == R.id.MapFragment)
-                navController.navigate(R.id.action_MapFragment_to_EditFragment)
-        }
     }
 
 
@@ -56,12 +77,6 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_show_map -> {
-                if(navController.currentDestination?.id == R.id.HomeFragment)
-                    navController.navigate(R.id.action_HomeFragment_to_MapFragment)
-                else if(navController.currentDestination?.id == R.id.ListFragment)
-                    navController.navigate(R.id.action_ListFragment_to_MapFragment)
-            }
             R.id.action_about -> {
                 val i :Intent = Intent(this , About::class.java)
                 startActivity(i)
