@@ -2,27 +2,27 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_home"
+        android:id="@+id/HomeFragment"
         android:icon="@drawable/ic_home"
         android:title="Home" />
 
     <item
-        android:id="@+id/nav_list"
+        android:id="@+id/ListFragment"
         android:icon="@drawable/ic_home"
         android:title="My Places" />
 
     <item
-        android:id="@+id/nav_map"
+        android:id="@+id/MapFragment"
         android:icon="@drawable/baseline_map_white_24dp"
         android:title="Map" />
 
     <item
-        android:id="@+id/nav_leaderboard"
+        android:id="@+id/LeaderboardFragment"
         android:icon="@drawable/ic_leaderboard"
         android:title="Leaderboard" />
 
     <item
-        android:id="@+id/nav_profile"
+        android:id="@+id/ProfileFragment"
         android:icon="@drawable/ic_avatar"
         android:title="Profile" />
 

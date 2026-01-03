@@ -7,6 +7,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
@@ -15,6 +16,11 @@ import androidx.preference.PreferenceManager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import elfak.mosis.myplaces.data.MyPlace
 import elfak.mosis.myplaces.model.LocationViewModel
 import elfak.mosis.myplaces.model.MyPlacesViewModel
 import org.osmdroid.config.Configuration
@@ -25,6 +31,7 @@ import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import java.util.*
 
 
 class MapFragment : Fragment() {
@@ -63,13 +70,46 @@ class MapFragment : Fragment() {
             )
         }else {
             setupMap()
+            observeMyPlaces()
         }
+        super.onViewCreated(view, savedInstanceState)
+
+        val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
+        val navController = findNavController()
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.HomeFragment -> {
+                    navController.navigate(R.id.HomeFragment)
+                    true
+                }
+                R.id.ViewFragment -> {
+                    navController.navigate(R.id.ViewFragment)
+                    true
+                }
+                R.id.MapFragment -> {
+                    navController.navigate(R.id.MapFragment)
+                    true
+                }
+                R.id.LeaderboardFragment -> {
+                    navController.navigate(R.id.LeaderboardFragment)
+                    true
+                }
+                R.id.ProfileFragment -> {
+                    navController.navigate(R.id.ProfileFragment)
+                    true
+                }
+                else -> false
+            }
+        }
+
+
     }
 
-    private fun addMyPlaceMarkers() {
+    private fun addMyPlaceMarkers(places : List<MyPlace>) {
         map.overlays.removeAll { it is Marker }
 
-        myPlacesViewModel.myPlacesList.forEach { place ->
+        places.forEach { place ->
             val marker = Marker(map)
 
             marker.position = GeoPoint(place.latitude.toDouble(), place.longitude.toDouble())
@@ -140,10 +180,14 @@ class MapFragment : Fragment() {
             }
         }
         map.controller.animateTo(startPoint)
-        addMyPlaceMarkers() // dodaje sve markere iz liste
+        myPlacesViewModel.fetchLocations()
 
     }
-
+    private fun observeMyPlaces() {
+        myPlacesViewModel.myPlacesList.observe(viewLifecycleOwner){ list ->
+            addMyPlaceMarkers(list)
+        }
+    }
     private fun setMyLocationOverlay()
     {
         var myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity), map)

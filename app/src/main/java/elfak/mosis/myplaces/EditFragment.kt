@@ -12,6 +12,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.ktx.Firebase
 import elfak.mosis.myplaces.data.MyPlace
 import elfak.mosis.myplaces.model.LocationViewModel
 import elfak.mosis.myplaces.model.MyPlacesViewModel
@@ -49,6 +51,7 @@ class EditFragment : Fragment() {
         setLocationButton = view.findViewById(R.id.editmyplace_location_button)
         addButton = view.findViewById(R.id.editmyplace_finished_button)
         cancelButton = view.findViewById(R.id.editmyplace_cancel_button)
+        var addedByText = view.findViewById<TextView>(R.id.addedByText)
 
 
         requireActivity().title =
@@ -85,6 +88,7 @@ class EditFragment : Fragment() {
 
             editName?.setText(selected.name)
             editDesc?.setText(selected.description)
+            addedByText.text = selected.userId
 
             if (
                 locationViewModel.longitude.value.isNullOrBlank() &&
@@ -124,7 +128,7 @@ class EditFragment : Fragment() {
                 Toast.makeText(requireContext(), "Please set location on the map", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
+            val userID = FirebaseAuth.getInstance().currentUser?.uid
             if (myPlacesViewModel.selected != null) {
                 myPlacesViewModel.selected?.apply {
                     this.name = name
@@ -132,13 +136,16 @@ class EditFragment : Fragment() {
                     this.longitude = lon
                     this.latitude = lat
                     this.type = type
+                    this.userId = userID.toString()
                 }
             } else {
-                myPlacesViewModel.addPlace(MyPlace(name, desc, lon, lat, type))
+                myPlacesViewModel.addLocation(MyPlace(
+                    name = name, description =  desc, longitude =  lon, latitude =  lat,type = type,userId = userID.toString()))
             }
 
             myPlacesViewModel.selected = null
             locationViewModel.setLocation("", "")
+
             findNavController().popBackStack()
         }
 

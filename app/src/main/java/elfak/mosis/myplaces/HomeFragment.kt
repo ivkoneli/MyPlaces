@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import elfak.mosis.myplaces.databinding.FragmentHomeBinding
 
 /**
@@ -30,7 +31,36 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
+        val navController = findNavController()
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.HomeFragment -> {
+                    navController.navigate(R.id.HomeFragment)
+                    true
+                }
+                R.id.ViewFragment -> {
+                    navController.navigate(R.id.ViewFragment)
+                    true
+                }
+                R.id.MapFragment -> {
+                    navController.navigate(R.id.MapFragment)
+                    true
+                }
+                R.id.LeaderboardFragment -> {
+                    navController.navigate(R.id.LeaderboardFragment)
+                    true
+                }
+                R.id.ProfileFragment -> {
+                    navController.navigate(R.id.ProfileFragment)
+                    true
+                }
+                else -> false
+            }
+        }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

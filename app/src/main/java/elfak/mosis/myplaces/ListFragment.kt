@@ -14,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import elfak.mosis.myplaces.data.MyPlace
 import elfak.mosis.myplaces.databinding.FragmentListBinding
 import elfak.mosis.myplaces.model.MyPlacesViewModel
@@ -46,47 +47,93 @@ class ListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val myPlacesList: ListView = requireView().findViewById<ListView>(R.id.my_places_list)
-        myPlacesList.adapter = ArrayAdapter<MyPlace>( view.context, android.R.layout.simple_list_item_1,myPlacesViewModel.myPlacesList)
-        myPlacesList.setOnItemClickListener( object  : AdapterView.OnItemClickListener {
-            override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                var myPlace:MyPlace= p0?.adapter?.getItem(p2) as MyPlace
-                myPlacesViewModel.selected = myPlace
-                view.findNavController().navigate(R.id.action_ListFragment_to_ViewFragment)
+        val myPlacesListView: ListView = binding.myPlacesList
+        val adapter = ArrayAdapter<MyPlace>(
+            requireContext(),
+            android.R.layout.simple_list_item_1,
+            mutableListOf()
+        )
+        myPlacesListView.adapter = adapter
+
+        myPlacesViewModel.myPlacesList.observe(viewLifecycleOwner) { list ->
+            adapter.clear()
+            adapter.addAll(list)
+            adapter.notifyDataSetChanged()
+        }
+
+        myPlacesListView.setOnItemClickListener { parent, _, position, _ ->
+            val myPlace = parent.getItemAtPosition(position) as MyPlace
+            myPlacesViewModel.selected = myPlace
+            findNavController().navigate(R.id.action_ListFragment_to_ViewFragment)
+        }
+
+        myPlacesListView.setOnCreateContextMenuListener { menu, v, menuInfo ->
+            val info = menuInfo as AdapterView.AdapterContextMenuInfo
+            val myPlace = myPlacesViewModel.myPlacesList.value?.get(info.position) ?: return@setOnCreateContextMenuListener
+            menu.setHeaderTitle(myPlace.name)
+            menu.add(0, 1, 1, "View place")
+            menu.add(0, 2, 2, "Edit place")
+            menu.add(0, 3, 3, "Delete place")
+            menu.add(0, 4, 4, "Show on map")
+        }
+
+        super.onViewCreated(view, savedInstanceState)
+
+        val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
+        val navController = findNavController()
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.HomeFragment -> {
+                    navController.navigate(R.id.HomeFragment)
+                    true
+                }
+                R.id.ViewFragment -> {
+                    navController.navigate(R.id.ViewFragment)
+                    true
+                }
+                R.id.MapFragment -> {
+                    navController.navigate(R.id.MapFragment)
+                    true
+                }
+                R.id.LeaderboardFragment -> {
+                    navController.navigate(R.id.LeaderboardFragment)
+                    true
+                }
+                R.id.ProfileFragment -> {
+                    navController.navigate(R.id.ProfileFragment)
+                    true
+                }
+                else -> false
             }
-        })
-        myPlacesList.setOnCreateContextMenuListener( object : View.OnCreateContextMenuListener {
-            override fun onCreateContextMenu( menu : ContextMenu , v: View?, menuInfo:ContextMenuInfo) {
-                val info = menuInfo as AdapterContextMenuInfo
-                val myPlace:MyPlace = myPlacesViewModel.myPlacesList[info.position]
-                menu.setHeaderTitle(myPlace.name)
-                menu.add(0, 1, 1, "View place")
-                menu.add(0, 2, 2, "Edit place")
-                menu.add(0, 3, 3, "Delete Place")
-                menu.add(0, 4, 4,  "Show on map")
-            }
-        })
+        }
     }
 
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val info = item.menuInfo as AdapterContextMenuInfo
-        if (item.itemId === 1){
-            myPlacesViewModel.selected = myPlacesViewModel.myPlacesList[info.position]
-            this.findNavController().navigate(R.id.action_ListFragment_to_ViewFragment)
-        }else if ( item.itemId === 2){
-            myPlacesViewModel.selected = myPlacesViewModel.myPlacesList[info.position]
-            this.findNavController().navigate(R.id.action_ListFragment_to_EditFragment)
-        }else if (item.itemId === 3) {
-            myPlacesViewModel.myPlacesList.removeAt(info.position)
-            val myplacesList: ListView = requireView().findViewById<ListView>(R.id.my_places_list)
-            myplacesList.adapter = this@ListFragment.context?.let {ArrayAdapter<MyPlace>(it , android.R.layout.simple_list_item_1, myPlacesViewModel.myPlacesList) }
-        }else if (item.itemId === 4){
-            myPlacesViewModel.selected = myPlacesViewModel.myPlacesList[info.position]
-            this.findNavController().navigate(R.id.action_ListFragment_to_MapFragment)
+        val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
+        val myPlace = myPlacesViewModel.myPlacesList.value?.get(info.position) ?: return super.onContextItemSelected(item)
+
+        when (item.itemId) {
+            1 -> { // View
+                myPlacesViewModel.selected = myPlace
+                findNavController().navigate(R.id.action_ListFragment_to_ViewFragment)
+            }
+            2 -> { // Edit
+                myPlacesViewModel.selected = myPlace
+                findNavController().navigate(R.id.action_ListFragment_to_EditFragment)
+            }
+            3 -> { // Delete
+                myPlacesViewModel.removeLocation(myPlace)
+            }
+            4 -> { // Show on map
+                myPlacesViewModel.selected = myPlace
+                findNavController().navigate(R.id.action_ListFragment_to_MapFragment)
+            }
         }
         return super.onContextItemSelected(item)
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
