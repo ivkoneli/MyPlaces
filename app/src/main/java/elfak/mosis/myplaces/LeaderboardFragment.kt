@@ -12,11 +12,12 @@ class LeaderboardFragment : Fragment(R.layout.fragment_leaderboard) {
 
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
 
+        // Bottom nav bar actions
         bottomNav.setOnItemSelectedListener { item ->
             val navController = findNavController()
             when (item.itemId) {
                 R.id.HomeFragment -> { navController.navigate(R.id.HomeFragment); true }
-                R.id.ViewFragment -> { navController.navigate(R.id.ViewFragment); true }
+                R.id.ListFragment -> { navController.navigate(R.id.ListFragment); true }
                 R.id.MapFragment -> { navController.navigate(R.id.MapFragment); true }
                 R.id.LeaderboardFragment -> { navController.navigate(R.id.LeaderboardFragment); true }
                 R.id.ProfileFragment -> { navController.navigate(R.id.ProfileFragment); true }

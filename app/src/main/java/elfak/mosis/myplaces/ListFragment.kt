@@ -18,6 +18,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import elfak.mosis.myplaces.data.MyPlace
 import elfak.mosis.myplaces.databinding.FragmentListBinding
 import elfak.mosis.myplaces.model.MyPlacesViewModel
+import elfak.mosis.myplaces.model.UserViewModel
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -29,6 +30,7 @@ class ListFragment : Fragment() {
 
     private val binding get() = _binding!!
     private val myPlacesViewModel: MyPlacesViewModel by activityViewModels()
+    private val userViewModel: UserViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
@@ -61,10 +63,13 @@ class ListFragment : Fragment() {
             adapter.notifyDataSetChanged()
         }
 
+        var currentUser = userViewModel.currentUser.value?.uid
+        myPlacesViewModel.fetchUserLocations(currentUser.toString())
+
         myPlacesListView.setOnItemClickListener { parent, _, position, _ ->
             val myPlace = parent.getItemAtPosition(position) as MyPlace
             myPlacesViewModel.selected = myPlace
-            findNavController().navigate(R.id.action_ListFragment_to_ViewFragment)
+            findNavController().navigate(R.id.action_ListFragment_to_EditFragment)
         }
 
         myPlacesListView.setOnCreateContextMenuListener { menu, v, menuInfo ->
@@ -82,28 +87,15 @@ class ListFragment : Fragment() {
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         val navController = findNavController()
 
+        // Bottom nav bar actions
         bottomNav.setOnItemSelectedListener { item ->
+            val navController = findNavController()
             when (item.itemId) {
-                R.id.HomeFragment -> {
-                    navController.navigate(R.id.HomeFragment)
-                    true
-                }
-                R.id.ViewFragment -> {
-                    navController.navigate(R.id.ViewFragment)
-                    true
-                }
-                R.id.MapFragment -> {
-                    navController.navigate(R.id.MapFragment)
-                    true
-                }
-                R.id.LeaderboardFragment -> {
-                    navController.navigate(R.id.LeaderboardFragment)
-                    true
-                }
-                R.id.ProfileFragment -> {
-                    navController.navigate(R.id.ProfileFragment)
-                    true
-                }
+                R.id.HomeFragment -> { navController.navigate(R.id.HomeFragment); true }
+                R.id.ListFragment -> { navController.navigate(R.id.ListFragment); true }
+                R.id.MapFragment -> { navController.navigate(R.id.MapFragment); true }
+                R.id.LeaderboardFragment -> { navController.navigate(R.id.LeaderboardFragment); true }
+                R.id.ProfileFragment -> { navController.navigate(R.id.ProfileFragment); true }
                 else -> false
             }
         }

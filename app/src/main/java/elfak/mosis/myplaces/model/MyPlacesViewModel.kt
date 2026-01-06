@@ -13,9 +13,11 @@ class MyPlacesViewModel: ViewModel() {
     fun fetchLocations() {
         Firebase.firestore.collection("locations")
             .get()
-            .addOnSuccessListener { result ->
-                val list = result.map { doc ->
-                    doc.toObject(MyPlace::class.java)
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(MyPlace::class.java)?.apply {
+                        id = doc.id
+                    }
                 }
                 myPlacesList.value = list
             }
@@ -23,15 +25,61 @@ class MyPlacesViewModel: ViewModel() {
                 Log.e("MyPlacesViewModel", "Failed to fetch locations", e)
             }
     }
+    fun fetchUserLocations(currentUserId: String) {
+        Firebase.firestore.collection("locations")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val list = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(MyPlace::class.java)?.apply {
+                        id = doc.id
+                    }
+                }
+
+                // filter po userId
+                myPlacesList.value = list.filter { it.userID == currentUserId }
+            }
+    }
+
+    fun fetchUsername(userId: String, callback: (String) -> Unit) {
+        Firebase.firestore.collection("users")
+            .document(userId)
+            .get()
+            .addOnSuccessListener { doc ->
+                val username = doc?.getString("username") ?: "Unknown"
+                callback(username)
+            }
+            .addOnFailureListener {
+                callback("Unknown")
+            }
+    }
     fun addLocation(location: MyPlace) {
         Firebase.firestore.collection("locations")
             .add(location)
             .addOnSuccessListener { docRef ->
-                // update lokalne LiveData
                 location.id = docRef.id
                 val currentList = myPlacesList.value?.toMutableList() ?: mutableListOf()
                 currentList.add(location)
                 myPlacesList.value = currentList
+            }
+    }
+
+    fun updateLocation(updated: MyPlace) {
+
+        Firebase.firestore.collection("locations")
+            .document(updated.id)
+            .set(updated)
+            .addOnSuccessListener {
+
+                val currentList = myPlacesList.value?.toMutableList() ?: return@addOnSuccessListener
+
+                val index = currentList.indexOfFirst { it.id == updated.id }
+                if (index != -1) {
+                    currentList[index] = updated
+                    myPlacesList.value = currentList
+                }
+            }
+            .addOnFailureListener {
+                Log.e("UPDATE", "Failed to update location", it)
             }
     }
 

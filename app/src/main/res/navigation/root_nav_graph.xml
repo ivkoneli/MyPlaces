@@ -109,5 +109,8 @@
         android:name="elfak.mosis.myplaces.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile" />
+    <action
+        android:id="@+id/action_ProfileFragment_to_LoginFragment"
+        app:destination="@id/LoginFragment"/>
 
 </navigation>

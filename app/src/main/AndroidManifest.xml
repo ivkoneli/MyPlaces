@@ -15,6 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyPlaces"
         tools:targetApi="22">
+        <activity
+            android:name=".MainActivity"/>
+
 
         <activity
             android:name=".AuthActivity"

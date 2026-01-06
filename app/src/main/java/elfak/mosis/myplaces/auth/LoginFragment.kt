@@ -9,16 +9,19 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import elfak.mosis.myplaces.MainActivity
 import elfak.mosis.myplaces.R
 import com.google.firebase.auth.FirebaseAuth
+import elfak.mosis.myplaces.model.UserViewModel
 
 
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
-    private val auth = FirebaseAuth.getInstance()
+    private val userViewModel: UserViewModel by activityViewModels()
+    private val authRepo = AuthRepository()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -26,26 +29,23 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         val email = view.findViewById<EditText>(R.id.emailInput)
         val pass = view.findViewById<EditText>(R.id.passwordInput)
 
+        // Call auth Repo login with fragment data
         view.findViewById<Button>(R.id.loginBtn).setOnClickListener {
-            val e = email.text.toString()
-            val p = pass.text.toString()
-
-            if (e.isBlank() || p.isBlank()) {
-                Toast.makeText(requireContext(), "Enter email and password", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            auth.signInWithEmailAndPassword(
+            // On success update the view model and navigate to home , onErr display error msg
+            authRepo.login(
                 email.text.toString(),
-                pass.text.toString()
-            ).addOnSuccessListener {
-                findNavController().navigate(R.id.action_login_to_home)
-            }.addOnFailureListener { e ->
-                Log.e("AUTH", "Login failed", e)
-                Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
-            }
+                pass.text.toString(),
+                onSuccess = { appUser ->
+                    findNavController().navigate(R.id.action_login_to_home)
+                    userViewModel.currentUser.value = appUser
+                },
+                onError = { msg ->
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
+                }
+            )
         }
 
+        // Navigate back to Register screen
         view.findViewById<TextView>(R.id.goRegister).setOnClickListener {
             findNavController().navigate(R.id.action_login_to_register)
         }

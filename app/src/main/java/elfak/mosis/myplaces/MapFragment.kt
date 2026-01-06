@@ -7,6 +7,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -29,6 +31,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.util.*
@@ -77,28 +80,15 @@ class MapFragment : Fragment() {
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         val navController = findNavController()
 
+        // Bottom nav bar actions
         bottomNav.setOnItemSelectedListener { item ->
+            val navController = findNavController()
             when (item.itemId) {
-                R.id.HomeFragment -> {
-                    navController.navigate(R.id.HomeFragment)
-                    true
-                }
-                R.id.ViewFragment -> {
-                    navController.navigate(R.id.ViewFragment)
-                    true
-                }
-                R.id.MapFragment -> {
-                    navController.navigate(R.id.MapFragment)
-                    true
-                }
-                R.id.LeaderboardFragment -> {
-                    navController.navigate(R.id.LeaderboardFragment)
-                    true
-                }
-                R.id.ProfileFragment -> {
-                    navController.navigate(R.id.ProfileFragment)
-                    true
-                }
+                R.id.HomeFragment -> { navController.navigate(R.id.HomeFragment); true }
+                R.id.ListFragment -> { navController.navigate(R.id.ListFragment); true }
+                R.id.MapFragment -> { navController.navigate(R.id.MapFragment); true }
+                R.id.LeaderboardFragment -> { navController.navigate(R.id.LeaderboardFragment); true }
+                R.id.ProfileFragment -> { navController.navigate(R.id.ProfileFragment); true }
                 else -> false
             }
         }
@@ -113,14 +103,27 @@ class MapFragment : Fragment() {
             val marker = Marker(map)
 
             marker.position = GeoPoint(place.latitude.toDouble(), place.longitude.toDouble())
-            marker.title = place.name
+            marker.title = "Lv.${place.level} ${place.name}"
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker.subDescription = when (place.type) {
-                "Pokemon" -> "Wild Pokémon"
-                "Pokestop" -> "XP Station"
-                "Healing" -> "Healing Station"
-                else -> ""
+            val infoWindow = object : MarkerInfoWindow(R.layout.custom_marker_info, map) {
+                override fun onOpen(item: Any?) {
+
+                    val title = mView.findViewById<TextView>(R.id.bubble_title)
+                    val sub = mView.findViewById<TextView>(R.id.bubble_subdescription)
+                    val button = mView.findViewById<Button>(R.id.btn_fight)
+
+                    title.text = marker.title
+                    sub.text = marker.subDescription
+
+                    button.setOnClickListener {
+                        marker.closeInfoWindow()
+
+                        val dialog = PokemonBattleDialog.newInstance(place)
+                        dialog.show(parentFragmentManager, "pokemon_battle")
+                    }
+                }
             }
+            marker.infoWindow = infoWindow
 
             // 👉 IKONICA PO TIPU
             marker.icon = when (place.type) {
@@ -134,9 +137,8 @@ class MapFragment : Fragment() {
                 if (locationViewModel.isSettingLocation) { // block click while setting location
                     false //
                 } else {
-                    m.showInfoWindow()
                     myPlacesViewModel.selected = place
-                    findNavController().navigate(R.id.action_MapFragment_to_EditFragment)
+                    m.showInfoWindow()
                     true
                 }
             }

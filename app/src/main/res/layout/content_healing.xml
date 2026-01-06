@@ -16,13 +16,15 @@
         android:minHeight="48dp"/>
 
     <TextView
-        android:layout_width="match_parent"
+        android:id="@+id/text_healing_level"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Healing Station Description" />
+        android:text="Level: 1"
+        android:textStyle="bold"/>
 
-    <EditText
-        android:id="@+id/edit_healing_desc"
+    <SeekBar
+        android:id="@+id/seek_healing_level"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"/>
+        android:max="29" />
 </LinearLayout>

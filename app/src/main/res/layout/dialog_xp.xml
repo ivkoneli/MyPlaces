@@ -1,0 +1,49 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/battle_dialog_bg"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/playerXpTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Level: 5"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="8dp"/>
+
+    <ProgressBar
+        android:id="@+id/playerXpBar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="250dp"
+        android:layout_height="24dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="@color/teal_200"
+        android:layout_marginBottom="24dp"/>
+
+    <TextView
+        android:id="@+id/pokemonXpTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pokémon Level: 5"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="8dp"/>
+
+    <ProgressBar
+        android:id="@+id/pokemonXpBar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="250dp"
+        android:layout_height="24dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="@color/purple_200"
+        android:layout_marginBottom="16dp"/>
+
+</LinearLayout>

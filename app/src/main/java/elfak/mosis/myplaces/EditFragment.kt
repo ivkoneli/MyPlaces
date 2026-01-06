@@ -17,6 +17,7 @@ import com.google.firebase.ktx.Firebase
 import elfak.mosis.myplaces.data.MyPlace
 import elfak.mosis.myplaces.model.LocationViewModel
 import elfak.mosis.myplaces.model.MyPlacesViewModel
+import elfak.mosis.myplaces.model.UserViewModel
 
 
 class EditFragment : Fragment() {
@@ -30,9 +31,10 @@ class EditFragment : Fragment() {
     private lateinit var addButton: Button
     private lateinit var cancelButton: Button
 
-    // Dinamički EditText/e koji se ubacuju
+    // Dinamički EditText koji se ubacuju
     private var editName: EditText? = null
-    private var editDesc: EditText? = null
+    private var levelSeekBar: SeekBar? = null
+    private var levelText: TextView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,6 +55,7 @@ class EditFragment : Fragment() {
         cancelButton = view.findViewById(R.id.editmyplace_cancel_button)
         var addedByText = view.findViewById<TextView>(R.id.addedByText)
 
+        editName = view.findViewById(R.id.edit_pokemon_name)
 
         requireActivity().title =
             if (myPlacesViewModel.selected == null) "Add Place"
@@ -87,8 +90,19 @@ class EditFragment : Fragment() {
             }
 
             editName?.setText(selected.name)
-            editDesc?.setText(selected.description)
-            addedByText.text = selected.userId
+            addedByText.text = "Added by: Loading..."
+
+            myPlacesViewModel.selected?.let { selected ->
+                editName?.setText(selected.name)
+
+                myPlacesViewModel.fetchUsername(selected.userID) { username ->
+                    addedByText.text = "Added by: $username"
+                }
+            }
+
+            val level = selected.level
+            levelSeekBar?.progress = level - 1
+            levelText?.text = "Level: $level"
 
             if (
                 locationViewModel.longitude.value.isNullOrBlank() &&
@@ -99,7 +113,6 @@ class EditFragment : Fragment() {
                     selected.latitude
                 )
             }
-
         }
 
         setLocationButton.setOnClickListener {
@@ -108,8 +121,9 @@ class EditFragment : Fragment() {
         }
 
         addButton.setOnClickListener {
-            val name = editName?.text.toString()
-            val desc = editDesc?.text.toString()
+
+            val name = getCurrentName()
+            val level = (levelSeekBar?.progress ?: 0) + 1
             val type = when (chipGroup.checkedChipId) {
                 R.id.chipPokemon -> "Pokemon"
                 R.id.chipPokestop -> "Pokestop"
@@ -119,7 +133,7 @@ class EditFragment : Fragment() {
             val lon = locationViewModel.longitude.value ?: ""
             val lat = locationViewModel.latitude.value ?: ""
 
-            if (name.isBlank() || desc.isBlank()) {
+            if (name.isBlank()) {
                 Toast.makeText(requireContext(), "Name and description required", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -128,24 +142,28 @@ class EditFragment : Fragment() {
                 Toast.makeText(requireContext(), "Please set location on the map", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val userID = FirebaseAuth.getInstance().currentUser?.uid
+            val userViewModel : UserViewModel by activityViewModels()
+            val currentUser = userViewModel.currentUser.value
+
             if (myPlacesViewModel.selected != null) {
-                myPlacesViewModel.selected?.apply {
-                    this.name = name
-                    this.description = desc
-                    this.longitude = lon
-                    this.latitude = lat
-                    this.type = type
-                    this.userId = userID.toString()
+                myPlacesViewModel.selected?.let { selected ->
+                    val updated = selected.copy(
+                        name = name,
+                        level = level,
+                        longitude = lon,
+                        latitude = lat,
+                        type = type,
+                        userID = selected.userID
+                    )
+                    myPlacesViewModel.updateLocation(updated)
                 }
             } else {
                 myPlacesViewModel.addLocation(MyPlace(
-                    name = name, description =  desc, longitude =  lon, latitude =  lat,type = type,userId = userID.toString()))
+                    name = name, level =  level, longitude =  lon, latitude =  lat,type = type, userID = currentUser?.uid.toString()))
             }
 
             myPlacesViewModel.selected = null
             locationViewModel.setLocation("", "")
-
             findNavController().popBackStack()
         }
 
@@ -162,9 +180,32 @@ class EditFragment : Fragment() {
         val inflater = LayoutInflater.from(requireContext())
         val layout = inflater.inflate(R.layout.content_pokemon, placeTypeContent, false)
         placeTypeContent.addView(layout)
+
         editName = layout.findViewById(R.id.edit_pokemon_name)
-        editDesc = layout.findViewById(R.id.edit_pokemon_desc)
+        levelSeekBar = layout.findViewById(R.id.seek_pokemon_level)
+        levelText = layout.findViewById(R.id.text_pokemon_level)
+
+        // init
+        levelSeekBar?.progress = 0
+        levelText?.text = "Level: 1"
+
+        levelSeekBar?.setOnSeekBarChangeListener(object :
+            SeekBar.OnSeekBarChangeListener {
+
+            override fun onProgressChanged(
+                seekBar: SeekBar?,
+                progress: Int,
+                fromUser: Boolean
+            ) {
+                val level = progress + 1
+                levelText?.text = "Level: $level"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
+
 
     private fun showPokestopFields() {
         placeTypeContent.removeAllViews()
@@ -172,7 +213,7 @@ class EditFragment : Fragment() {
         val layout = inflater.inflate(R.layout.content_pokestop, placeTypeContent, false)
         placeTypeContent.addView(layout)
         editName = layout.findViewById(R.id.edit_pokestop_name)
-        editDesc = layout.findViewById(R.id.edit_pokestop_desc)
+        levelText = layout.findViewById(R.id.text_pokestop_level)
     }
 
     private fun showHealingFields() {
@@ -181,7 +222,11 @@ class EditFragment : Fragment() {
         val layout = inflater.inflate(R.layout.content_healing, placeTypeContent, false)
         placeTypeContent.addView(layout)
         editName = layout.findViewById(R.id.edit_healing_name)
-        editDesc = layout.findViewById(R.id.edit_healing_desc)
+        levelText = layout.findViewById(R.id.text_healing_level)
+    }
+
+    private fun getCurrentName(): String {
+        return editName?.text?.toString()?.trim() ?: ""
     }
 
     private fun updateLocationButtonColor() {

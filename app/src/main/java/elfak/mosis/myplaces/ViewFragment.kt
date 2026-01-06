@@ -32,7 +32,7 @@ class ViewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.viewmyplaceNameText.text=myPlacesViewModel.selected?.name
-        binding.viewmyplaceDescText.text=myPlacesViewModel.selected?.description
+        binding.viewmyplaceDescText.text= myPlacesViewModel.selected?.level.toString()
         binding.viewmyplaceFinishedButton.setOnClickListener {
             findNavController().popBackStack()
         }
