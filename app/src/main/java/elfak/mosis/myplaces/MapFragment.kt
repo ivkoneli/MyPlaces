@@ -2,23 +2,26 @@ package elfak.mosis.myplaces
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.*
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.preference.PreferenceManager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.slider.Slider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -39,9 +42,21 @@ import java.util.*
 
 class MapFragment : Fragment() {
 
+    private lateinit var locationProvider: GpsMyLocationProvider
+    private lateinit var myLocationOverlay: MyLocationNewOverlay
     lateinit var map: MapView
     private val locationViewModel: LocationViewModel by activityViewModels()
     private val myPlacesViewModel: MyPlacesViewModel by activityViewModels()
+
+    private lateinit var typeChipGroup: ChipGroup
+    private lateinit var chipPokemon: Chip
+    private lateinit var chipPokestop: Chip
+    private lateinit var chipHeal: Chip
+
+    private val searchHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var searchRunnable: Runnable? = null
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +92,45 @@ class MapFragment : Fragment() {
         }
         super.onViewCreated(view, savedInstanceState)
 
+        typeChipGroup = view.findViewById(R.id.type_chip_group)
+        chipPokemon = view.findViewById(R.id.chip_pokemon)
+        chipPokestop = view.findViewById(R.id.chip_pokestop)
+        chipHeal = view.findViewById(R.id.chip_heal)
+
+        chipPokemon.setColor(R.color.pokemon_blue_faded)
+        chipHeal.setColor(R.color.heal_green_faded)
+        chipPokestop.setColor(R.color.pokestop_yellow_faded)
+
+        typeChipGroup.setOnCheckedChangeListener { _, checkedId ->
+
+            // reset svih chipova na faded
+            chipPokemon.setColor(R.color.pokemon_blue_faded)
+            chipHeal.setColor(R.color.heal_green_faded)
+            chipPokestop.setColor(R.color.pokestop_yellow_faded)
+
+            when (checkedId) {
+                R.id.chip_pokemon -> {
+                    myPlacesViewModel.selectedType = "Pokemon"
+                    chipPokemon.setColor(R.color.pokemon_blue)
+                }
+                R.id.chip_pokestop -> {
+                    myPlacesViewModel.selectedType = "Pokestop"
+                    chipPokestop.setColor(R.color.pokestop_yellow)
+                }
+                R.id.chip_heal -> {
+                    myPlacesViewModel.selectedType = "Healing"
+                    chipHeal.setColor(R.color.heal_green)
+                }
+                else -> {
+                    myPlacesViewModel.selectedType = null
+                }
+            }
+
+            myPlacesViewModel.applyFilters()
+        }
+
+
+
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         val navController = findNavController()
 
@@ -93,6 +147,48 @@ class MapFragment : Fragment() {
             }
         }
 
+        val searchInput = view.findViewById<EditText>(R.id.search_input)
+        searchInput.addTextChangedListener { text ->
+            searchRunnable?.let { searchHandler.removeCallbacks(it) }
+
+            searchRunnable = Runnable {
+                myPlacesViewModel.searchQuery = text?.toString()
+                myPlacesViewModel.applyFilters()
+            }
+
+            searchHandler.postDelayed(searchRunnable!!, 300)
+        }
+
+        val filterButton = view.findViewById<ImageButton>(R.id.filter_button)
+        val distanceSlider = view.findViewById<Slider>(R.id.distance_slider)
+        val sliderContainer = view.findViewById<LinearLayout>(R.id.slider_container)
+
+        filterButton.setOnClickListener {
+            sliderContainer.visibility =
+                if (sliderContainer.visibility == View.GONE) View.VISIBLE
+                else View.GONE
+        }
+
+        distanceSlider.value = 1000f
+        myPlacesViewModel.maxDistanceMeters = 1000f
+
+        distanceSlider.setLabelFormatter { value ->
+            if (value < 1000) {
+                "${value.toInt()} m"
+            } else {
+                val km = value / 1000f
+                if (km % 1f == 0f) {
+                    "${km.toInt()} km"
+                } else {
+                    String.format("%.1f km", km)
+                }
+            }
+        }
+
+        distanceSlider.addOnChangeListener { _, value, _ ->
+            myPlacesViewModel.maxDistanceMeters = value
+            myPlacesViewModel.applyFilters()
+        }
 
     }
 
@@ -190,11 +286,29 @@ class MapFragment : Fragment() {
             addMyPlaceMarkers(list)
         }
     }
+
+
     private fun setMyLocationOverlay()
     {
-        var myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity), map)
+        locationProvider = GpsMyLocationProvider(requireContext())
+        myLocationOverlay = MyLocationNewOverlay(locationProvider, map)
+
         myLocationOverlay.enableMyLocation()
+        myLocationOverlay.enableFollowLocation()
+
         map.overlays.add(myLocationOverlay)
+
+        myLocationOverlay.runOnFirstFix {
+            val loc = myLocationOverlay.lastFix
+            loc?.let {
+                requireActivity().runOnUiThread {
+                    myPlacesViewModel.currentUserLocation =
+                        it.latitude to it.longitude
+
+                    myPlacesViewModel.applyFilters()
+                }
+            }
+        }
     }
 
     private val requestPermissionLauncher =
@@ -241,6 +355,15 @@ class MapFragment : Fragment() {
 
         map.overlays.add(0, MapEventsOverlay(receiver))
     }
+
+
+    private fun Chip.setColor(colorRes: Int, textColorRes: Int = android.R.color.white) {
+        chipBackgroundColor = ColorStateList.valueOf(
+            ContextCompat.getColor(context, colorRes)
+        )
+        setTextColor(ContextCompat.getColor(context, textColorRes))
+    }
+
 
 
     override fun onPrepareOptionsMenu(menu: Menu) {

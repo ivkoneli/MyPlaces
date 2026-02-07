@@ -25,6 +25,7 @@ class AuthRepository {
                 fetchAppUser(uid, onSuccess, onError)
             }
             .addOnFailureListener {
+                auth.signInWithEmailAndPassword(email, password)
                 onError(it.message ?: "Login failed")
             }
     }

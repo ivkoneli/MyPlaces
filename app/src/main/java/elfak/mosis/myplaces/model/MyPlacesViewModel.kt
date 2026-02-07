@@ -9,7 +9,25 @@ import elfak.mosis.myplaces.data.MyPlace
 
 class MyPlacesViewModel: ViewModel() {
 
+    // -----------------------------
+    // LIVE DATA LISTS
+    // -----------------------------
+    // allPlaces -> sve fetchovane lokacije
+    var allPlaces = MutableLiveData<List<MyPlace>>(emptyList())
+
+    // myPlacesList -> trenutno filtrirana lista koja ide na mapu
     var myPlacesList = MutableLiveData<List<MyPlace>>(emptyList())
+
+    // -----------------------------
+    // FILTER PARAMETERS
+    // -----------------------------
+    var selectedType: String? = null
+    var searchQuery: String? = null
+    var maxDistanceMeters: Float? = 1000f // 1KM default
+    var currentUserLocation: Pair<Double, Double>? = null // (lat, lon)
+
+    var selected: MyPlace? = null
+
     fun fetchLocations() {
         Firebase.firestore.collection("locations")
             .get()
@@ -19,7 +37,8 @@ class MyPlacesViewModel: ViewModel() {
                         id = doc.id
                     }
                 }
-                myPlacesList.value = list
+                allPlaces.value = list
+                applyFilters()
             }
             .addOnFailureListener { e ->
                 Log.e("MyPlacesViewModel", "Failed to fetch locations", e)
@@ -34,9 +53,8 @@ class MyPlacesViewModel: ViewModel() {
                         id = doc.id
                     }
                 }
-
-                // filter po userId
-                myPlacesList.value = list.filter { it.userID == currentUserId }
+                allPlaces.value = list.filter { it.userID == currentUserId }
+                applyFilters()
             }
     }
 
@@ -57,9 +75,10 @@ class MyPlacesViewModel: ViewModel() {
             .add(location)
             .addOnSuccessListener { docRef ->
                 location.id = docRef.id
-                val currentList = myPlacesList.value?.toMutableList() ?: mutableListOf()
+                val currentList = allPlaces.value?.toMutableList() ?: mutableListOf()
                 currentList.add(location)
-                myPlacesList.value = currentList
+                allPlaces.value = currentList
+                applyFilters()
             }
     }
 
@@ -70,12 +89,12 @@ class MyPlacesViewModel: ViewModel() {
             .set(updated)
             .addOnSuccessListener {
 
-                val currentList = myPlacesList.value?.toMutableList() ?: return@addOnSuccessListener
-
+                val currentList = allPlaces.value?.toMutableList() ?: return@addOnSuccessListener
                 val index = currentList.indexOfFirst { it.id == updated.id }
                 if (index != -1) {
                     currentList[index] = updated
-                    myPlacesList.value = currentList
+                    allPlaces.value = currentList
+                    applyFilters()
                 }
             }
             .addOnFailureListener {
@@ -86,7 +105,64 @@ class MyPlacesViewModel: ViewModel() {
     fun removeLocation(location : MyPlace){
         val currentList = myPlacesList.value?.toMutableList() ?: mutableListOf()
         currentList.remove(location)
-        myPlacesList.value = currentList
+        allPlaces.value = currentList
+        applyFilters()
     }
-    var selected: MyPlace? = null
+
+    fun applyFilters() {
+        var result = allPlaces.value ?: emptyList()
+
+        // FILTER BY TYPE
+        selectedType?.let { type ->
+            result = result.filter { it.type == type }
+        }
+
+        // FILTER BY SEARCH QUERY (FUZZY)
+        searchQuery?.let { query ->
+            if (query.isNotBlank()) {
+                result = result.filter {
+                    fuzzyMatch(it.name, query)
+                }
+            }
+        }
+
+        // FILTER BY DISTANCE
+        maxDistanceMeters?.let { maxDist ->
+            currentUserLocation?.let { (lat, lon) ->
+                result = result.filter {
+                    val d = distanceInMeters(lat, lon, it.latitude.toDouble(), it.longitude.toDouble())
+                    d <= maxDist
+                }
+            }
+        }
+
+        // UPDATE LIVE DATA
+        myPlacesList.value = result
+    }
+
+    // HELPER: distance between two lat/lon points in meters
+    private fun distanceInMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Float {
+        val results = FloatArray(1)
+        android.location.Location.distanceBetween(lat1, lon1, lat2, lon2, results)
+        return results[0]
+    }
+
+    private fun fuzzyMatch(text: String, query: String): Boolean {
+        var tIndex = 0
+        var qIndex = 0
+
+        val t = text.lowercase()
+        val q = query.lowercase()
+
+        while (tIndex < t.length && qIndex < q.length) {
+            if (t[tIndex] == q[qIndex]) {
+                qIndex++
+            }
+            tIndex++
+        }
+
+        return qIndex == q.length
+    }
+
+
 }

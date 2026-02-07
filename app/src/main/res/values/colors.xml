@@ -10,4 +10,16 @@
     <color name="button_disabled">#9E9E9E</color> <!-- disabled button / light grey  -->
     <color name="button_enabled">#2196F3</color> <!-- enabled button  / light blue -->
 
+
+    <!-- FULL -->
+    <color name="pokemon_blue">#2196F3</color>
+    <color name="heal_green">#4CAF50</color>
+    <color name="pokestop_yellow">#FFEB3B</color>
+
+    <!-- FADED -->
+    <color name="pokemon_blue_faded">#802196F3</color>
+    <color name="heal_green_faded">#804CAF50</color>
+    <color name="pokestop_yellow_faded">#80FFEB3B</color>
+
+
 </resources>
