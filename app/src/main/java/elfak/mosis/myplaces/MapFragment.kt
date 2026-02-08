@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.view.*
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,11 +24,14 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.slider.Slider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import elfak.mosis.myplaces.data.AppUser
 import elfak.mosis.myplaces.data.MyPlace
 import elfak.mosis.myplaces.model.LocationViewModel
 import elfak.mosis.myplaces.model.MyPlacesViewModel
+import elfak.mosis.myplaces.model.UserViewModel
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.util.GeoPoint
@@ -47,6 +51,7 @@ class MapFragment : Fragment() {
     lateinit var map: MapView
     private val locationViewModel: LocationViewModel by activityViewModels()
     private val myPlacesViewModel: MyPlacesViewModel by activityViewModels()
+    private val userViewModel : UserViewModel by activityViewModels()
 
     private lateinit var typeChipGroup: ChipGroup
     private lateinit var chipPokemon: Chip
@@ -204,20 +209,105 @@ class MapFragment : Fragment() {
             val infoWindow = object : MarkerInfoWindow(R.layout.custom_marker_info, map) {
                 override fun onOpen(item: Any?) {
 
+                    val user = userViewModel.currentUser.value ?: null
+
                     val title = mView.findViewById<TextView>(R.id.bubble_title)
-                    val sub = mView.findViewById<TextView>(R.id.bubble_subdescription)
+                    val status = mView.findViewById<TextView>(R.id.bubble_status)
                     val button = mView.findViewById<Button>(R.id.btn_fight)
+                    val progressBar = mView.findViewById<ProgressBar>(R.id.healProgressBar)
 
-                    title.text = marker.title
-                    sub.text = marker.subDescription
 
-                    button.setOnClickListener {
-                        marker.closeInfoWindow()
+                    title.text = "Lv.${place.level} ${place.name}"
 
-                        val dialog = PokemonBattleDialog.newInstance(place)
-                        dialog.show(parentFragmentManager, "pokemon_battle")
+                    status.visibility = View.GONE
+                    button.isEnabled = true
+
+                    when (place.type) {
+
+                        "Pokemon" -> {
+                            button.text = "Fight"
+
+                            button.setOnClickListener {
+                                marker.closeInfoWindow()
+                                PokemonBattleDialog
+                                    .newInstance(place)
+                                    .show(parentFragmentManager, "pokemon_battle")
+                            }
+                        }
+
+                        "Pokestop" -> {
+                            button.text = "Collect"
+
+                            val now = System.currentTimeMillis()
+                            val cooldown = 10 * 60 * 500 // 5 minuta
+                            val last = place.lastCollectedAt ?: 0L
+                            val remaining = cooldown - (now - last)
+
+                            if (remaining > 0) {
+                                val minutes = (remaining / 60000) + 1
+                                status.visibility = View.VISIBLE
+                                status.text = "Available in $minutes min"
+                                button.isEnabled = false
+
+                                // Opcionalno, možeš da napraviš countdown koji se ažurira svake sekunde/minut
+                                val timer = object : CountDownTimer(remaining, 1000) {
+                                    override fun onTick(millisUntilFinished: Long) {
+                                        val mins = (millisUntilFinished / 60000)
+                                        val secs = (millisUntilFinished % 60000) / 1000
+                                        status.text = String.format("Available in %02d:%02d min", mins, secs)
+                                    }
+
+                                    override fun onFinish() {
+                                        status.visibility = View.GONE
+                                        button.isEnabled = true
+                                    }
+                                }
+                                timer.start()
+
+                            }
+                            else {
+                                status.visibility = View.GONE
+                                button.isEnabled = true
+                                button.setOnClickListener {
+                                    marker.closeInfoWindow()
+                                    val user = userViewModel.currentUser.value ?: return@setOnClickListener
+
+                                    collectPokestopXp(user, place, 50) {
+                                        // Otvori XP dijalog samo za korisnika
+                                        XpRewardDialog( pokemon = null, gainedXp = 50)
+                                            .show(parentFragmentManager, "xp_dialog")
+
+                                        // Update infoWindow odmah
+                                        status.visibility = View.VISIBLE
+                                        status.text = "Available in 10:00 min"
+                                        button.isEnabled = false
+
+                                        // Start cooldown timer
+                                        object : CountDownTimer(cooldown.toLong(), 1000) {
+                                            override fun onTick(millisUntilFinished: Long) {
+                                                val mins = (millisUntilFinished / 60000)
+                                                val secs = (millisUntilFinished % 60000) / 1000
+                                                status.text = String.format("Available in %02d:%02d min", mins, secs)
+                                            }
+
+                                            override fun onFinish() {
+                                                status.visibility = View.GONE
+                                                button.isEnabled = true
+                                            }
+                                        }.start()
+                                    }
+                                }
+                            }
+                        }
+
+                        "Healing" -> {
+                            button.text = "Heal"
+                            setupHealingInfoWindow(marker, place,status,button,progressBar)
+                        }
+
                     }
                 }
+
             }
             marker.infoWindow = infoWindow
 
@@ -230,11 +320,20 @@ class MapFragment : Fragment() {
             }
 
             marker.setOnMarkerClickListener { m, _ ->
-                if (locationViewModel.isSettingLocation) { // block click while setting location
-                    false //
+                if (locationViewModel.isSettingLocation) {
+                    false
                 } else {
-                    myPlacesViewModel.selected = place
-                    m.showInfoWindow()
+                    if (m.isInfoWindowOpen) {
+                        m.closeInfoWindow()
+                    } else {
+                        map.overlays.forEach {
+                            if (it is Marker && it.isInfoWindowOpen) {
+                                it.closeInfoWindow()
+                            }
+                        }
+                        myPlacesViewModel.selected = place
+                        m.showInfoWindow()
+                    }
                     true
                 }
             }
@@ -356,12 +455,177 @@ class MapFragment : Fragment() {
         map.overlays.add(0, MapEventsOverlay(receiver))
     }
 
+    private fun isHealingAvailable(place: MyPlace): Boolean {
+        val now = System.currentTimeMillis()
+        val cooldown = 10 * 60 * 1500L // 15 minuta
+        val last = place.lastHealedAt ?: 0L
+        return now - last >= cooldown
+    }
+    private fun getRemainingHealingTime(place: MyPlace): Long {
+        val now = System.currentTimeMillis()
+        val cooldown = 10 * 60 * 1500L
+        val last = place.lastHealedAt ?: 0L
+        return (cooldown - (now - last)).coerceAtLeast(0)
+    }
+
+    private fun setupHealingInfoWindow(marker: Marker, place: MyPlace, status: TextView, button: Button, progressBar: ProgressBar) {
+
+        // Proveri da li je healing dostupan
+        if (!isHealingAvailable(place)) {
+            val minutes = (getRemainingHealingTime(place) / 60000) + 1
+            status.visibility = View.VISIBLE
+            status.text = "Available in $minutes min"
+            button.isEnabled = false
+        } else {
+            status.visibility = View.GONE
+            button.isEnabled = true
+            button.text = "Heal"
+
+            button.setOnClickListener {
+                startHealing(marker, place, button, status, progressBar)
+            }
+        }
+    }
+
+    private fun startHealing(
+        marker: Marker,
+        place: MyPlace,
+        button: Button,
+        status: TextView,
+        progressBar: ProgressBar
+    ) {
+        button.isEnabled = false
+        status.visibility = View.VISIBLE
+        status.text = "Healing..."
+        progressBar.progress = 0
+
+        val healDuration = 5000L // 5 sekundi
+        val interval = 100L
+        val steps = (healDuration / interval).toInt()
+        var currentStep = 0
+
+        val timer = object : Runnable {
+            override fun run() {
+                currentStep++
+                val progress = (currentStep * 100 / steps).coerceAtMost(100)
+                progressBar.progress = progress
+                status.text = "Healing... $progress%"
+
+                if (currentStep < steps) {
+                    progressBar.postDelayed(this, interval)
+                } else {
+                    completeHealing(place, button, status, progressBar)
+                }
+            }
+        }
+
+        progressBar.post(timer)
+    }
+
+    private fun completeHealing(
+        place: MyPlace,
+        button: Button,
+        status: TextView,
+        progressBar: ProgressBar
+    ) {
+        val user = userViewModel.currentUser.value ?: return
+        val db = FirebaseFirestore.getInstance()
+
+        // Fetch user pokemone po ownerId
+        userViewModel.fetchUserPokemons(user.uid) { pokemons ->
+            if (pokemons.isEmpty()) {
+                Toast.makeText(requireContext(), "No Pokémons to heal!", Toast.LENGTH_SHORT).show()
+                return@fetchUserPokemons
+            }
+
+            val batch = db.batch()
+
+            // Update HP svakom Pokémonu na maxhp
+            pokemons.forEach { pokemon ->
+                val ref = db.collection("pokemons").document(pokemon.id)
+                batch.update(ref, "currenthp", pokemon.maxhp)
+            }
+
+            // Update lastHealedAt za ovu lokaciju
+            val placeRef = db.collection("locations").document(place.id)
+            batch.update(placeRef, "lastHealedAt", System.currentTimeMillis())
+
+            // Commit batch
+            batch.commit().addOnSuccessListener {
+                Toast.makeText(requireContext(), "All your Pokémons healed!", Toast.LENGTH_SHORT).show()
+                status.text = "Healed!"
+                progressBar.progress = 100
+                button.isEnabled = false // odmah sivo
+
+                // Ne koristimo postDelayed za dugme
+                // Umesto toga, postavi lastHealedAt u place objektu
+                place.lastHealedAt = System.currentTimeMillis()
+
+                // Ako korisnik ponovo otvori info window, cooldown će se pravilno prikazati
+                val minutes = (getRemainingHealingTime(place) / 60000) + 1
+                status.text = "Available in $minutes min"
+
+            }.addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Healing failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                button.isEnabled = true
+                status.visibility = View.GONE
+                progressBar.progress = 0
+            }
+        }
+    }
+
+
+
 
     private fun Chip.setColor(colorRes: Int, textColorRes: Int = android.R.color.white) {
         chipBackgroundColor = ColorStateList.valueOf(
             ContextCompat.getColor(context, colorRes)
         )
         setTextColor(ContextCompat.getColor(context, textColorRes))
+    }
+
+
+
+    private fun collectPokestopXp(user: AppUser, place: MyPlace, gainedXp: Int = 50, onComplete: (() -> Unit)? = null) {
+        val db = FirebaseFirestore.getInstance()
+
+        // 1️⃣ Update korisnikov XP i level
+        var newXp = user.xp + gainedXp
+        var newLevel = user.level
+        var xpThreshold = user.level * 100
+
+        while (newXp >= xpThreshold && newLevel < 30) {
+            newXp -= xpThreshold
+            newLevel += 1
+            xpThreshold = newLevel * 100
+        }
+
+        // 2️⃣ Setujemo sadašnji timestamp za lastCollectedAt
+        val now = System.currentTimeMillis()
+
+        // 3️⃣ Firestore update u jednom call-u
+        val userRef = db.collection("users").document(user.uid)
+        val placeRef = db.collection("locations").document(place.id ?: return)
+
+        // Start transaction da bude atomarno
+        db.runBatch { batch ->
+            batch.update(userRef, mapOf("xp" to newXp, "level" to newLevel))
+            batch.update(placeRef, mapOf("lastCollectedAt" to now))
+        }.addOnSuccessListener {
+            // Update ViewModel
+            userViewModel.currentUser.value = user.copy(level = newLevel, xp = newXp)
+            place.lastCollectedAt = now
+
+            onComplete?.invoke()
+
+            Toast.makeText(requireContext(),
+                "Collected XP +$gainedXp, Level: $newLevel",
+                Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener { e ->
+            Toast.makeText(requireContext(),
+                "Failed to collect XP: ${e.message}",
+                Toast.LENGTH_SHORT).show()
+        }
     }
 
 

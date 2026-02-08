@@ -212,8 +212,24 @@ class EditFragment : Fragment() {
         val inflater = LayoutInflater.from(requireContext())
         val layout = inflater.inflate(R.layout.content_pokestop, placeTypeContent, false)
         placeTypeContent.addView(layout)
+
         editName = layout.findViewById(R.id.edit_pokestop_name)
         levelText = layout.findViewById(R.id.text_pokestop_level)
+        levelSeekBar = layout.findViewById(R.id.seek_pokestop_level) // moraš dodati seekbar u XML
+
+        // init
+        levelSeekBar?.progress = 0
+        levelText?.text = "Level: 1"
+
+        levelSeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val level = progress + 1
+                levelText?.text = "Level: $level"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
 
     private fun showHealingFields() {
@@ -221,9 +237,26 @@ class EditFragment : Fragment() {
         val inflater = LayoutInflater.from(requireContext())
         val layout = inflater.inflate(R.layout.content_healing, placeTypeContent, false)
         placeTypeContent.addView(layout)
+
         editName = layout.findViewById(R.id.edit_healing_name)
         levelText = layout.findViewById(R.id.text_healing_level)
+        levelSeekBar = layout.findViewById(R.id.seek_healing_level) // moraš dodati seekbar u XML
+
+        // init
+        levelSeekBar?.progress = 0
+        levelText?.text = "Level: 1"
+
+        levelSeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val level = progress + 1
+                levelText?.text = "Level: $level"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
+
 
     private fun getCurrentName(): String {
         return editName?.text?.toString()?.trim() ?: ""

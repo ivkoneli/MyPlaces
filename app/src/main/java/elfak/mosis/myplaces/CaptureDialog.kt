@@ -11,6 +11,7 @@ import androidx.fragment.app.DialogFragment
 
 class CaptureDialog(
     private val defeatedPokemonName: String,
+    private val canCapture: Boolean,
     private val onCapture: () -> Unit,
     private val onSkip: () -> Unit
 ) : DialogFragment() {
@@ -25,12 +26,16 @@ class CaptureDialog(
         val captureBtn = view.findViewById<Button>(R.id.btnCapture)
         val skipBtn = view.findViewById<Button>(R.id.btnSkip)
         val titleText = view.findViewById<TextView>(R.id.captureTitle)
-
         titleText.text = "\uD83C\uDF89 You defeated ${defeatedPokemonName}! \uD83C\uDF89"
 
-        captureBtn.setOnClickListener {
-            onCapture()
-            dismiss()
+        if (!canCapture) {
+            captureBtn.isEnabled = false
+            captureBtn.text = "Capture\n(No more slots!)"
+        } else {
+            captureBtn.setOnClickListener {
+                onCapture()
+                dismiss()
+            }
         }
 
         skipBtn.setOnClickListener {

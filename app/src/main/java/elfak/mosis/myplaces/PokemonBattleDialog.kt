@@ -32,7 +32,6 @@ import elfak.mosis.myplaces.data.Pokemon
 import elfak.mosis.myplaces.model.BattleViewModel
 import elfak.mosis.myplaces.model.MyPlacesViewModel
 import elfak.mosis.myplaces.model.UserViewModel
-import org.w3c.dom.Text
 
 class PokemonBattleDialog : DialogFragment() {
 
@@ -79,6 +78,7 @@ class PokemonBattleDialog : DialogFragment() {
         val enemyPokemonHpbar = view.findViewById<ProgressBar>(R.id.enemyPokemonHpBar)
         val chooseBtn = view.findViewById<Button>(R.id.btnChoosePokemon)
 
+        var pokemonCount = 0
         val adapter = PokemonAdapter(
             isBattleMode = true
         ) { selected ->
@@ -107,6 +107,7 @@ class PokemonBattleDialog : DialogFragment() {
         userViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             userViewModel.fetchUserPokemons(user.uid) { pokemons ->
                 adapter.submitList(pokemons)
+                pokemonCount = pokemons.size
             }
         }
         battleViewModel.selectedPlayerPokemon.observe(viewLifecycleOwner) { pokemon ->
@@ -170,6 +171,7 @@ class PokemonBattleDialog : DialogFragment() {
 
             val user = userViewModel.currentUser.value ?: return@setOnClickListener
             val playerPoke = battleViewModel.selectedPlayerPokemon.value ?: return@setOnClickListener
+            val capturable = pokemonCount < user.level + 1
 
             battleViewModel.startBattle(
                 onWin = { defeatedPokemon ->
@@ -179,6 +181,7 @@ class PokemonBattleDialog : DialogFragment() {
 
                     showCaptureDialog(
                         defeatedPokemon = defeatedPokemon,
+                        canCapture = capturable,
                         onCapture = {
                             capturePokemon(defeatedPokemon)
                             showXpPopup(user,playerPoke)
@@ -404,11 +407,14 @@ class PokemonBattleDialog : DialogFragment() {
     }
     private fun showCaptureDialog(
         defeatedPokemon: Pokemon,
+        canCapture : Boolean,
         onCapture: () -> Unit,
         onSkip: () -> Unit
     ) {
+
         CaptureDialog(
             defeatedPokemonName = defeatedPokemon.name,
+            canCapture = canCapture,
             onCapture = onCapture,
             onSkip = onSkip
         ).show(parentFragmentManager, "capture_dialog")
@@ -416,9 +422,8 @@ class PokemonBattleDialog : DialogFragment() {
 
 
    private fun showXpPopup(user: AppUser ,player: Pokemon) {
-        XpRewardDialog(user, player, 100) {
-
-        }.show(parentFragmentManager, "xp_dialog")
-    }
+        XpRewardDialog(player, 100)
+        .show(parentFragmentManager, "xp_dialog")
+   }
 
 }

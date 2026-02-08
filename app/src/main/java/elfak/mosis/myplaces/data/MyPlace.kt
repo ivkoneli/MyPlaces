@@ -10,7 +10,10 @@ data class MyPlace(
     var longitude: String = "",
     var latitude: String = "",
     var type: String = "Pokemon",
-    var userID: String = ""
+    var userID: String = "",
+    var lastCollectedAt: Long? = null,
+    var lastHealedAt: Long? = null
+
 ) : Parcelable{
     override fun toString(): String = name
 }
