@@ -30,7 +30,7 @@ class CaptureDialog(
 
         if (!canCapture) {
             captureBtn.isEnabled = false
-            captureBtn.text = "Capture\n(No more slots!)"
+            captureBtn.text = "No slots"
         } else {
             captureBtn.setOnClickListener {
                 onCapture()

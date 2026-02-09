@@ -47,6 +47,8 @@ class EditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val isEditMode = myPlacesViewModel.selected != null
+
         // View binding
         chipGroup = view.findViewById(R.id.chipGroupPlaceType)
         placeTypeContent = view.findViewById(R.id.placeTypeContent)
@@ -81,7 +83,8 @@ class EditFragment : Fragment() {
         locationViewModel.latitude.observe(viewLifecycleOwner) { updateLocationButtonColor() }
 
         // Ako imamo selektovan MyPlace, postavi tip i podatke
-        myPlacesViewModel.selected?.let { selected ->
+        if (isEditMode) {
+            val selected = myPlacesViewModel.selected!!
 
             when (selected.type) {
                 "Pokemon" -> chipGroup.check(R.id.chipPokemon)
@@ -92,20 +95,15 @@ class EditFragment : Fragment() {
             editName?.setText(selected.name)
             addedByText.text = "Added by: Loading..."
 
-            myPlacesViewModel.selected?.let { selected ->
-                editName?.setText(selected.name)
-
-                myPlacesViewModel.fetchUsername(selected.userID) { username ->
+            myPlacesViewModel.fetchUsername(selected.userID) { username ->
                     addedByText.text = "Added by: $username"
-                }
             }
 
             val level = selected.level
             levelSeekBar?.progress = level - 1
             levelText?.text = "Level: $level"
 
-            if (
-                locationViewModel.longitude.value.isNullOrBlank() &&
+            if (locationViewModel.longitude.value.isNullOrBlank() ||
                 locationViewModel.latitude.value.isNullOrBlank()
             ) {
                 locationViewModel.setLocation(
@@ -113,10 +111,12 @@ class EditFragment : Fragment() {
                     selected.latitude
                 )
             }
+
         }
 
         setLocationButton.setOnClickListener {
             locationViewModel.isSettingLocation = true
+            requireActivity().title = "Pokemon Gong"
             findNavController().navigate(R.id.action_EditFragment_to_MapFragment)
         }
 
@@ -163,11 +163,13 @@ class EditFragment : Fragment() {
             }
 
             myPlacesViewModel.selected = null
+            requireActivity().title = "Pokemon Gong"
             locationViewModel.setLocation("", "")
             findNavController().popBackStack()
         }
 
         cancelButton.setOnClickListener {
+            requireActivity().title = "Pokemon Gong"
             myPlacesViewModel.selected = null
             locationViewModel.setLocation("", "")
             findNavController().popBackStack()

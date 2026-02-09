@@ -138,6 +138,7 @@ class MapFragment : Fragment() {
 
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         val navController = findNavController()
+        bottomNav.selectedItemId = R.id.MapFragment
 
         // Bottom nav bar actions
         bottomNav.setOnItemSelectedListener { item ->
@@ -423,6 +424,9 @@ class MapFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when( item.itemId) {
             R.id.action_new_place -> {
+
+                myPlacesViewModel.selected = null
+
                 this.findNavController().navigate(R.id.action_MapFragment_to_EditFragment)
                 true
             }

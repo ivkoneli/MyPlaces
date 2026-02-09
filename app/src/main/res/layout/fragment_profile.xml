@@ -150,6 +150,7 @@
         android:id="@+id/bottomNav"
         android:layout_width="match_parent"
         android:layout_height="64dp"
+        app:labelVisibilityMode="selected"
         android:background="@color/purple_500"
         app:itemIconTint="@android:color/white"
         app:itemTextColor="@android:color/white"

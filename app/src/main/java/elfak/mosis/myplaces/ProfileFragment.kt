@@ -37,6 +37,9 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         var winsText = view.findViewById<TextView>(R.id.winText)
         var loseText = view.findViewById<TextView>(R.id.lossText)
 
+        bottomNav.selectedItemId = R.id.ProfileFragment
+
+
         val recyclerView = view.findViewById<RecyclerView>(R.id.pokemonList)
         adapter = PokemonAdapter()
         recyclerView.adapter = adapter

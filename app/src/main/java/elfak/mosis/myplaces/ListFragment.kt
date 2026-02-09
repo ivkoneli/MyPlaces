@@ -57,7 +57,7 @@ class ListFragment : Fragment() {
         )
         myPlacesListView.adapter = adapter
 
-        myPlacesViewModel.myPlacesList.observe(viewLifecycleOwner) { list ->
+        myPlacesViewModel.userPlaces.observe(viewLifecycleOwner) { list ->
             adapter.clear()
             adapter.addAll(list)
             adapter.notifyDataSetChanged()
@@ -74,7 +74,7 @@ class ListFragment : Fragment() {
 
         myPlacesListView.setOnCreateContextMenuListener { menu, v, menuInfo ->
             val info = menuInfo as AdapterView.AdapterContextMenuInfo
-            val myPlace = myPlacesViewModel.myPlacesList.value?.get(info.position) ?: return@setOnCreateContextMenuListener
+            val myPlace = myPlacesViewModel.userPlaces.value?.get(info.position) ?: return@setOnCreateContextMenuListener
             menu.setHeaderTitle(myPlace.name)
             menu.add(0, 1, 1, "View place")
             menu.add(0, 2, 2, "Edit place")
@@ -86,6 +86,7 @@ class ListFragment : Fragment() {
 
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         val navController = findNavController()
+        bottomNav.selectedItemId = R.id.ListFragment
 
         // Bottom nav bar actions
         bottomNav.setOnItemSelectedListener { item ->

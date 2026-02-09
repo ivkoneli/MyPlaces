@@ -14,7 +14,8 @@ class MyPlacesViewModel: ViewModel() {
     // -----------------------------
     // allPlaces -> sve fetchovane lokacije
     var allPlaces = MutableLiveData<List<MyPlace>>(emptyList())
-
+    // filterovane userove lokacije
+    var userPlaces = MutableLiveData<List<MyPlace>>(emptyList())
     // myPlacesList -> trenutno filtrirana lista koja ide na mapu
     var myPlacesList = MutableLiveData<List<MyPlace>>(emptyList())
 
@@ -52,9 +53,9 @@ class MyPlacesViewModel: ViewModel() {
                     doc.toObject(MyPlace::class.java)?.apply {
                         id = doc.id
                     }
-                }
-                allPlaces.value = list.filter { it.userID == currentUserId }
-                applyFilters()
+                }.filter { it.userID == currentUserId }
+
+                userPlaces.value = list      // čista lista za ListFragment
             }
     }
 

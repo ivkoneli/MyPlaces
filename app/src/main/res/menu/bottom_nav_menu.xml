@@ -8,7 +8,7 @@
 
     <item
         android:id="@+id/ListFragment"
-        android:icon="@drawable/ic_home"
+        android:icon="@drawable/ic_places"
         android:title="My Places" />
 
     <item
@@ -18,7 +18,7 @@
 
     <item
         android:id="@+id/LeaderboardFragment"
-        android:icon="@drawable/ic_leaderboard"
+        android:icon="@drawable/ic_leaderborads"
         android:title="Leaderboard" />
 
     <item

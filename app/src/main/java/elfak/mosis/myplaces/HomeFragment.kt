@@ -33,6 +33,7 @@ class HomeFragment : Fragment() {
 
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         val navController = findNavController()
+        bottomNav.selectedItemId = R.id.HomeFragment
 
         // Bottom nav bar actions
         bottomNav.setOnItemSelectedListener { item ->
