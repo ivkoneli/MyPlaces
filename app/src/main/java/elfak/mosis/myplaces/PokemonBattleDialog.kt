@@ -80,16 +80,20 @@ class PokemonBattleDialog : DialogFragment() {
 
         var pokemonCount = 0
         val adapter = PokemonAdapter(
-            isBattleMode = true
-        ) { selected ->
-            battleViewModel.setPlayerPokemon(selected)
-            startBattleBtn.visibility = View.VISIBLE
-            chooseBtn.visibility = View.GONE
-            playerPokemonName.text = "Lv.${selected.level}   ${selected.name}"
-            playerPokemonAttack.text = "${selected.attack}"
-            playerPokemonHealth.text = "❤ ${selected.currenthp} / ${selected.maxhp}"
-            showBattleLog()
-        }
+            isBattleMode = true,
+            onClick = { selected ->
+                Log.d("BattleDialog", "Adapter clicked: ${selected.name}")
+                battleViewModel.setPlayerPokemon(selected)
+                startBattleBtn.visibility = View.VISIBLE
+                chooseBtn.visibility = View.GONE
+                playerPokemonName.text = "Lv.${selected.level}   ${selected.name}"
+                playerPokemonAttack.text = "${selected.attack}"
+                playerPokemonHealth.text = "❤ ${selected.currenthp} / ${selected.maxhp}"
+                showBattleLog()
+            },
+            showDisown = false
+        )
+
 
         pokemonList.adapter = adapter
         pokemonList.layoutManager = LinearLayoutManager(requireContext())
@@ -235,13 +239,15 @@ class PokemonBattleDialog : DialogFragment() {
         userViewModel.currentUser.value = user
 
         val db = FirebaseFirestore.getInstance()
+        val isAlive = (player.currenthp > 0)
 
         val data = mapOf(
             "xp" to player.xp,
             "level" to player.level,
             "maxhp" to player.maxhp,
             "currenthp" to player.currenthp.coerceAtLeast(0),
-            "attack" to player.attack
+            "attack" to player.attack,
+            "isAlive" to isAlive
         )
 
         db.collection("pokemons")

@@ -95,7 +95,8 @@ class AuthRepository {
             currenthp = 100,
             attack = 15,
             ownerId = ownerId,
-            level = 1
+            level = 1,
+            isAlive = true
         )
         db.collection("pokemons")
             .add(starterPokemon)
@@ -123,7 +124,8 @@ class AuthRepository {
 
         val ownedPokemon = pokemon.copy(
             ownerId = ownerId,
-            currenthp = 0
+            currenthp = 0,
+            isAlive = false
         )
 
         db.collection("pokemons")

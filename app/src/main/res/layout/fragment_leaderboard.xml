@@ -16,15 +16,55 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp"/>
 
+    <!-- Tab dugmad -->
+    <LinearLayout
+        android:id="@+id/filterTabs"
+        android:layout_width="0dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/leaderboard_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal"
+        android:clipToPadding="false"
+        android:clipChildren="false">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnWins"
+            android:layout_width="0dp"
+            android:layout_height="45dp"
+            android:layout_weight="1"
+            android:text="Wins"
+            android:textColor="@android:color/black"
+            android:background="@drawable/bg_tab_button"
+            android:stateListAnimator="@null"
+            android:padding="0dp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnLevel"
+            android:layout_width="0dp"
+            android:layout_height="45dp"
+            android:layout_weight="1"
+            android:text="Level"
+            android:textColor="@android:color/black"
+            android:background="@drawable/bg_tab_button"
+            android:stateListAnimator="@null"
+            android:padding="0dp"/>
+
+
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/leaderboardRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/leaderboard_title"
+        app:layout_constraintTop_toBottomOf="@id/filterTabs"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:padding="12dp"/>
+        android:padding="12dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"

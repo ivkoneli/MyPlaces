@@ -119,19 +119,67 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
+    <LinearLayout
+        android:id="@+id/sortContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:background="#D0E8FF"
+        android:padding="4dp"
+        app:layout_constraintTop_toBottomOf="@id/xpContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Spinner za sortiranje -->
+        <Spinner
+            android:id="@+id/sortSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.6"
+            android:entries="@array/sort_options"
+            android:spinnerMode="dropdown"
+            android:background="@android:drawable/btn_dropdown" />
+
+        <!-- Checkbox za alive -->
+        <CheckBox
+            android:id="@+id/checkboxAlive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alive"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Sort toggle dugme -->
+        <ImageButton
+            android:id="@+id/btnSortToggle"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_sort"
+            android:scaleType="centerInside"
+            android:contentDescription="Toggle Sort Order"/>
+    </LinearLayout>
+
+
     <!-- RecyclerView section for user's Pokemons -->
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/pokemonList"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginHorizontal="16dp"
         android:clipToPadding="false"
         android:paddingVertical="16dp"
         android:scrollbars="vertical"
-        app:layout_constraintTop_toBottomOf="@id/xpContainer"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintTop_toBottomOf="@id/sortContainer"
         app:layout_constraintBottom_toTopOf="@id/btnLogout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginHorizontal="16dp"/>
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/btnLogout"

@@ -4,9 +4,7 @@ import PokemonAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -16,6 +14,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
+import elfak.mosis.myplaces.data.AppUser
 import elfak.mosis.myplaces.data.Pokemon
 import elfak.mosis.myplaces.model.UserViewModel
 import org.w3c.dom.Text
@@ -25,42 +24,86 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private val userViewModel : UserViewModel by activityViewModels()
     private lateinit var adapter : PokemonAdapter
     private val db = FirebaseFirestore.getInstance()
+
+    // UI elementi kao class members
+    private lateinit var usernameText: TextView
+    private lateinit var levelText: TextView
+    private lateinit var xpText: TextView
+    private lateinit var xpProgress: ProgressBar
+    private lateinit var winsText: TextView
+    private lateinit var loseText: TextView
+    private lateinit var logoutBtn: Button
+    private lateinit var sortSpinner: Spinner
+    private lateinit var checkboxAlive: CheckBox
+    private lateinit var btnSortToggle: ImageButton
+
+    private var currentPokemons: List<Pokemon> = emptyList()
+    private var isAscending = false // default descending
+    private var visitedUsername: String? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val logoutBtn = view.findViewById<Button>(R.id.btnLogout)
-        val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
-        val usernameText = view.findViewById<TextView>(R.id.usernameInput)
-        val levelText = view.findViewById<TextView>(R.id.levelText)
-        val xpText = view.findViewById<TextView>(R.id.xpText)
-        val xpProgress = view.findViewById<ProgressBar>(R.id.xpProgress)
-        var winsText = view.findViewById<TextView>(R.id.winText)
-        var loseText = view.findViewById<TextView>(R.id.lossText)
+        visitedUsername = arguments?.getString("username") // username od posete, ako postoji
 
+        logoutBtn = view.findViewById(R.id.btnLogout)
+        usernameText = view.findViewById(R.id.usernameInput)
+        levelText = view.findViewById(R.id.levelText)
+        xpText = view.findViewById(R.id.xpText)
+        xpProgress = view.findViewById(R.id.xpProgress)
+        winsText = view.findViewById(R.id.winText)
+        loseText = view.findViewById(R.id.lossText)
+
+        sortSpinner = view.findViewById(R.id.sortSpinner)
+        checkboxAlive = view.findViewById(R.id.checkboxAlive)
+        btnSortToggle = view.findViewById(R.id.btnSortToggle)
+
+        val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.selectedItemId = R.id.ProfileFragment
 
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.pokemonList)
-        adapter = PokemonAdapter()
+        adapter = PokemonAdapter(
+            isBattleMode = false,
+            showDisown = true, // 🌟 samo ovde se pojavljuje dugme
+            onClick = { pokemon ->
+                // ovo je normalni klik
+            },
+            onDisownClick = { pokemon ->
+                val currentUserId = userViewModel.currentUser.value?.uid ?: return@PokemonAdapter
+
+                userViewModel.disownPokemon(currentUserId, pokemon.id) { success ->
+                    if (success) {
+                        currentPokemons = currentPokemons.filter { it.id != pokemon.id }
+                        refreshPokemonList()
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to disown Pokemon", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+            }
+
+        )
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
 
-        // Update user info when the view model changes
-        userViewModel.currentUser.observe(viewLifecycleOwner) { user ->
-            user ?: return@observe
+        val currentUser = userViewModel.currentUser.value
 
-            usernameText.text = "${user.username}"
-            levelText.text = "Level: ${user.level}"
 
-            val xpNeededForNextLevel = user.level * 100
-            val xpPercent = ((user.xp.toFloat() / xpNeededForNextLevel) * 100).coerceIn(0f, 100f).toInt()
-
-            xpText.text = "XP: $xpPercent%"
-            xpProgress.progress = xpPercent
-            winsText.text = "Wins: ${user.wins}"
-            loseText.text = "Loses: ${user.loses}"
+        if (visitedUsername != null) {
+            // Gledamo tuđi profil
+            userViewModel.fetchUserByUsername(visitedUsername!!) { user ->
+                user ?: return@fetchUserByUsername
+                populateProfileUI(user)
+                logoutBtn.visibility = View.GONE
+            }
+        } else if (currentUser != null) {
+            // Gledamo svoj profil
+            populateProfileUI(currentUser)
+            logoutBtn.visibility = View.VISIBLE
         }
+
 
         logoutBtn.setOnClickListener {
             // Logout - delete user view model
@@ -77,6 +120,32 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 R.id.action_ProfileFragment_to_LoginFragment
             )
         }
+        // Spinner za sortiranje
+        ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.sort_options,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            sortSpinner.adapter = adapter
+        }
+
+        // Listeneri za sortiranje
+        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                refreshPokemonList()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+        checkboxAlive.setOnCheckedChangeListener { _, _ ->
+            refreshPokemonList()
+        }
+
+        btnSortToggle.setOnClickListener {
+            isAscending = !isAscending
+            refreshPokemonList()
+        }
 
         // Bottom nav bar actions
         bottomNav.setOnItemSelectedListener { item ->
@@ -91,14 +160,62 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
         }
     }
-    override fun onResume() {
-        super.onResume()
 
-        val user = userViewModel.currentUser.value ?: return
+    private fun populateProfileUI(user: AppUser) {
+        usernameText.text = user.username
+        levelText.text = "Level: ${user.level}"
+
+        val xpNeeded = user.level * 100
+        val xpPercent = ((user.xp.toFloat() / xpNeeded) * 100).coerceIn(0f, 100f).toInt()
+        xpText.text = "XP: $xpPercent%"
+        xpProgress.progress = xpPercent
+        winsText.text = "Wins: ${user.wins}"
+        loseText.text = "Loses: ${user.loses}"
+
         userViewModel.fetchUserPokemons(user.uid) { pokemons ->
-            adapter.submitList(pokemons)
+            currentPokemons = pokemons
+            refreshPokemonList()
         }
     }
+
+    private fun refreshPokemonList() {
+        if (currentPokemons.isEmpty()) return
+
+        // filtriranje po "Alive"
+        var filtered = if (checkboxAlive.isChecked) {
+            currentPokemons.filter { it.currenthp > 0 }
+        } else {
+            currentPokemons
+        }
+
+        // sortiranje po spinner-u
+        val selectedSort = sortSpinner.selectedItem.toString()
+        filtered = when (selectedSort) {
+            "Level" -> filtered.sortedBy { it.level }
+            "HP" -> filtered.sortedBy { it.currenthp }
+            "Name" -> filtered.sortedBy { it.name.lowercase() }
+            else -> filtered
+        }
+
+        // invertovanje ako descending
+        if (!isAscending) {
+            filtered = filtered.reversed()
+        }
+
+        adapter.submitList(filtered.map { it.copy() })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val visitedUsername = arguments?.getString("username")
+        if (visitedUsername != null) {
+            userViewModel.fetchUserByUsername(visitedUsername) { user ->
+                user ?: return@fetchUserByUsername
+                populateProfileUI(user)
+            }
+        }
+    }
+
 
 }
 

@@ -74,7 +74,5 @@ class BattleViewModel : ViewModel() {
         }
     }
 
-
-
 }
 

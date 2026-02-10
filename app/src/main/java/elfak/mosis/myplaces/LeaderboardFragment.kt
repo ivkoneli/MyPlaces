@@ -1,10 +1,12 @@
 package elfak.mosis.myplaces
 
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.View
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,7 +24,6 @@ class LeaderboardFragment : Fragment(R.layout.fragment_leaderboard) {
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.selectedItemId = R.id.LeaderboardFragment
 
-        // Bottom nav bar actions
         bottomNav.setOnItemSelectedListener { item ->
             val navController = findNavController()
             when (item.itemId) {
@@ -37,17 +38,56 @@ class LeaderboardFragment : Fragment(R.layout.fragment_leaderboard) {
 
         // RecyclerView setup
         val recyclerView = view.findViewById<RecyclerView>(R.id.leaderboardRecyclerView)
-        adapter = UserLeaderboardAdapter(emptyList())
+        adapter = UserLeaderboardAdapter(emptyList()) { username ->
+            val bundle = Bundle().apply {
+                putString("username", username)
+            }
+            findNavController().navigate(
+                R.id.UserProfileFragment,
+                bundle
+            )
+        }
+
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // Fetch leaderboard
+        val btnWins = view.findViewById<Button>(R.id.btnWins)
+        val btnLevel = view.findViewById<Button>(R.id.btnLevel)
+
+        // --- Funkcija za selektovanje tab-a ---
+        fun selectTab(selected: Button, other: Button) {
+            // svetlija nijansa za selektovani, normalna za drugi
+            selected.setBackgroundColor(Color.parseColor("#DDF4FF")) // svetla plava
+            other.setBackgroundColor(Color.parseColor("#A3CBEF")) // normalna plava
+
+            // “Izdignuto” efekt
+            val scale = 1.05f
+            selected.scaleX = scale
+            selected.scaleY = scale
+            other.scaleX = 1f
+            other.scaleY = 1f
+        }
+
+        // inicijalno: Wins tab selektovan
+        selectTab(btnWins, btnLevel)
         userViewModel.fetchUserWins { userWins ->
-            Log.d("LEADERBOARD", "Fetched ${userWins.size} users")
-            userWins.forEach { Log.d("LEADERBOARD", it.toString()) }
-            adapter.updateData(userWins.take(50)) // samo prvih 50
+            adapter.updateData(userWins.take(50))
+        }
+
+        // klik na Wins
+        btnWins.setOnClickListener {
+            selectTab(btnWins, btnLevel)
+            userViewModel.fetchUserWins { userWins ->
+                adapter.updateData(userWins.take(50))
+            }
+        }
+
+        // klik na Level
+        btnLevel.setOnClickListener {
+            selectTab(btnLevel, btnWins)
+            userViewModel.fetchUserLevels { userLevels ->
+                adapter.updateData(userLevels.take(50))
+            }
         }
     }
 }
-
-

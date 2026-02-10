@@ -9,7 +9,8 @@ data class Pokemon(
     var attack: Int = 10,
     var level: Int = 1,
     var xp: Int = 0,
-    var ownerId: String = ""
+    var ownerId: String = "",
+    var isAlive: Boolean = true
 ) {
     // Dodaje XP posle pobede u borbi
     fun addBattleXP(amount: Int = 100) {

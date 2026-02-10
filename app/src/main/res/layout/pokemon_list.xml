@@ -1,54 +1,82 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="12dp"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
     android:background="@drawable/pokemon_item_border"
-    android:layout_marginBottom="8dp">
+    android:padding="12dp"
+    android:visibility="visible"
+    tools:visibility="visible">
 
+    <!-- Glavni horizontalni container za tekstove -->
     <LinearLayout
-        android:orientation="horizontal"
+        android:id="@+id/pokemonInfoContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/btnDisown"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/pokemonName"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Lv.1  Pikachu"
-            android:textSize="18sp"
-            android:layout_weight="1"/>
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/pokemonCurrentHp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="❤️ 100"
-            android:layout_marginEnd="16dp"/>
+            <TextView
+                android:id="@+id/pokemonName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Lv.1  Pikachu"
+                android:textSize="18sp" />
 
-        <TextView
-            android:id="@+id/pokemonMaxHp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="/ 100"
-            android:layout_marginEnd="16dp"/>
+            <TextView
+                android:id="@+id/pokemonCurrentHp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:text="❤️ 100" />
 
-        <TextView
-            android:id="@+id/pokemonAtk"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="⚔️ 10"/>
+            <TextView
+                android:id="@+id/pokemonMaxHp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:text="/ 100" />
+
+            <TextView
+                android:id="@+id/pokemonAtk"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚔️ 10" />
+        </LinearLayout>
+
+        <!-- HP ProgressBar -->
+        <ProgressBar
+            android:id="@+id/pokemonHpBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:layout_marginTop="4dp"
+            android:max="100"
+            android:progress="50"
+            android:progressBackgroundTint="@android:color/darker_gray"
+            android:progressTint="@android:color/holo_green_light" />
     </LinearLayout>
 
-    <!-- HP ProgressBar -->
-    <ProgressBar
-        android:id="@+id/pokemonHpBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="12dp"
-        android:max="100"
-        android:progress="50"
-        android:progressTint="@android:color/holo_green_light"
-        android:progressBackgroundTint="@android:color/darker_gray"
-        android:layout_marginTop="4dp"/>
-</LinearLayout>
+    <!-- Dugme za disown -->
+    <ImageButton
+        android:id="@+id/btnDisown"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="8dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Disown Pokemon"
+        android:padding="1dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_disown"
+        android:visibility="gone" />
+
+</RelativeLayout>

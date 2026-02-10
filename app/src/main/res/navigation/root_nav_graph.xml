@@ -113,4 +113,15 @@
         android:id="@+id/action_ProfileFragment_to_LoginFragment"
         app:destination="@id/LoginFragment"/>
 
+    <fragment
+        android:id="@+id/UserProfileFragment"
+        android:name="elfak.mosis.myplaces.UserProfileFragment"
+        android:label="UserProfile"
+        tools:layout="@layout/fragment_user_profile" />
+
+    <argument
+        android:name="username"
+        app:argType="string" />
+
+
 </navigation>

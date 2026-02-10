@@ -197,6 +197,21 @@ class MapFragment : Fragment() {
         }
 
     }
+    private fun isUserNearby(place: MyPlace, maxDistance: Float = 250f): Boolean {
+
+        val userLocation = myPlacesViewModel.currentUserLocation ?: return false
+        val (userLat, userLon) = userLocation
+
+        val results = FloatArray(1)
+        android.location.Location.distanceBetween(
+            userLat,
+            userLon,
+            place.latitude.toDouble(),
+            place.longitude.toDouble(),
+            results
+        )
+        return results[0] <= maxDistance
+    }
 
     private fun addMyPlaceMarkers(places : List<MyPlace>) {
         map.overlays.removeAll { it is Marker }
@@ -211,14 +226,21 @@ class MapFragment : Fragment() {
                 override fun onOpen(item: Any?) {
 
                     val user = userViewModel.currentUser.value ?: null
-
                     val title = mView.findViewById<TextView>(R.id.bubble_title)
                     val status = mView.findViewById<TextView>(R.id.bubble_status)
                     val button = mView.findViewById<Button>(R.id.btn_fight)
                     val progressBar = mView.findViewById<ProgressBar>(R.id.healProgressBar)
 
-
                     title.text = "Lv.${place.level} ${place.name}"
+
+                    val isNearby = isUserNearby(place)
+                    if (!isNearby) {
+                        status.visibility = View.VISIBLE
+                        status.text = "Move closer to interact"
+                        button.isEnabled = false
+                        button.alpha = 0.5f
+                        return
+                    }
 
                     status.visibility = View.GONE
                     button.isEnabled = true
@@ -244,13 +266,14 @@ class MapFragment : Fragment() {
                             val last = place.lastCollectedAt ?: 0L
                             val remaining = cooldown - (now - last)
 
+                            // Ako je uzeto pre proveri koliko jos dok ne bude dostupno
                             if (remaining > 0) {
                                 val minutes = (remaining / 60000) + 1
                                 status.visibility = View.VISIBLE
                                 status.text = "Available in $minutes min"
                                 button.isEnabled = false
 
-                                // Opcionalno, možeš da napraviš countdown koji se ažurira svake sekunde/minut
+                                // Timer
                                 val timer = object : CountDownTimer(remaining, 1000) {
                                     override fun onTick(millisUntilFinished: Long) {
                                         val mins = (millisUntilFinished / 60000)
@@ -266,6 +289,7 @@ class MapFragment : Fragment() {
                                 timer.start()
 
                             }
+                            // Ako je dostupno omoguci klik
                             else {
                                 status.visibility = View.GONE
                                 button.isEnabled = true
@@ -280,7 +304,7 @@ class MapFragment : Fragment() {
 
                                         // Update infoWindow odmah
                                         status.visibility = View.VISIBLE
-                                        status.text = "Available in 10:00 min"
+                                        status.text = "Available in 5:00 min"
                                         button.isEnabled = false
 
                                         // Start cooldown timer
@@ -391,11 +415,20 @@ class MapFragment : Fragment() {
     private fun setMyLocationOverlay()
     {
         locationProvider = GpsMyLocationProvider(requireContext())
+
+        locationProvider.startLocationProvider { location, _ ->
+            location?.let {
+                myPlacesViewModel.currentUserLocation =
+                    it.latitude to it.longitude
+
+                myPlacesViewModel.applyFilters()
+            }
+        }
+
         myLocationOverlay = MyLocationNewOverlay(locationProvider, map)
 
         myLocationOverlay.enableMyLocation()
         myLocationOverlay.enableFollowLocation()
-
         map.overlays.add(myLocationOverlay)
 
         myLocationOverlay.runOnFirstFix {
@@ -548,6 +581,7 @@ class MapFragment : Fragment() {
             pokemons.forEach { pokemon ->
                 val ref = db.collection("pokemons").document(pokemon.id)
                 batch.update(ref, "currenthp", pokemon.maxhp)
+                batch.update(ref, "isAlive", true)
             }
 
             // Update lastHealedAt za ovu lokaciju
