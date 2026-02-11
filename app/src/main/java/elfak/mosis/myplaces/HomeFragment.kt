@@ -2,10 +2,16 @@ package elfak.mosis.myplaces
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 import elfak.mosis.myplaces.databinding.FragmentHomeBinding
+import elfak.mosis.myplaces.model.UserViewModel
+import org.w3c.dom.Text
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -13,9 +19,8 @@ import elfak.mosis.myplaces.databinding.FragmentHomeBinding
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
+    private val userViewModel : UserViewModel by activityViewModels()
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -30,6 +35,19 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val welcomeCardUser = view.findViewById<TextView>(R.id.welcome_card_user)
+        val btnExplore = view.findViewById<Button>(R.id.btn_explore)
+
+        val user = userViewModel.currentUser.value
+
+        if (user != null) {
+            welcomeCardUser.text  = user.username
+        }
+
+        btnExplore.setOnClickListener {
+            findNavController().navigate(R.id.MapFragment)
+        }
 
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
         val navController = findNavController()

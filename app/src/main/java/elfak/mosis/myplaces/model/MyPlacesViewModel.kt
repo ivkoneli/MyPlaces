@@ -111,6 +111,10 @@ class MyPlacesViewModel: ViewModel() {
     }
 
     fun applyFilters() {
+
+        // Safeguard da se ne bi ucitavala mapa pre nego sto zapravo dobijemo lokaciju
+        val userLoc = currentUserLocation?: return
+
         var result = allPlaces.value ?: emptyList()
 
         // FILTER BY TYPE
@@ -129,7 +133,7 @@ class MyPlacesViewModel: ViewModel() {
 
         // FILTER BY DISTANCE
         maxDistanceMeters?.let { maxDist ->
-            currentUserLocation?.let { (lat, lon) ->
+            userLoc?.let { (lat, lon) ->
                 result = result.filter {
                     val d = distanceInMeters(lat, lon, it.latitude.toDouble(), it.longitude.toDouble())
                     d <= maxDist

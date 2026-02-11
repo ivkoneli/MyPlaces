@@ -11,6 +11,21 @@
         android:layout_height="match_parent"
         tilesource="Mapnik"/>
 
+    <FrameLayout
+        android:id="@+id/map_loading_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#AA000000"
+        android:visibility="visible">
+
+        <ProgressBar
+            android:layout_gravity="center"
+            android:background="#80000000"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"/>
+    </FrameLayout>
+
+
     <!-- SEARCH BAR OVERLAY -->
     <LinearLayout
         android:id="@+id/search_container"
@@ -39,9 +54,10 @@
             android:id="@+id/filter_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_menu_compass"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Filter locations"/>
+            android:contentDescription="Filter locations"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_filter" />
     </LinearLayout>
 
     <!-- CHIP GROUP OVERLAY -->

@@ -39,6 +39,10 @@ class PokemonAdapter(
             atk.text = "⚔️ ${pokemon.attack}"
             atk.setTextColor(textColor)
 
+            itemView.alpha = 1f
+            itemView.isClickable = false
+            itemView.isEnabled = false
+
             val hpPercent = if (pokemon.maxhp > 0) (pokemon.currenthp.toFloat() / pokemon.maxhp * 100).toInt() else 0
             hpBar.progress = hpPercent
             val color = when {
@@ -48,12 +52,18 @@ class PokemonAdapter(
             }
             hpBar.progressTintList = itemView.context.getColorStateList(color)
 
-            val isAlive = pokemon.isAlive
-            itemView.alpha = if (isAlive) 1f else 0.4f
+            val isAlive = pokemon.currenthp > 0
 
-            // ⚡ Osiguraj da item može da reaguje
-            itemView.isClickable = true
-            itemView.isEnabled = true
+            val canClick = when {
+                showDisown -> true          // profil: svi klikabilni
+                else -> isAlive             // battle: samo živi
+            }
+
+
+            itemView.alpha = if (isAlive) 1f else 0.3f
+            itemView.isClickable = canClick
+            itemView.isEnabled = canClick
+
 
             // 🔥 Ovo je klik itema
             itemView.setOnClickListener {
@@ -82,7 +92,7 @@ class PokemonAdapter(
                     oldItem.currenthp == newItem.currenthp &&
                     oldItem.maxhp == newItem.maxhp &&
                     oldItem.attack == newItem.attack &&
-                    oldItem.isAlive == newItem.isAlive
+                    oldItem.alive == newItem.alive
         }
     }
 

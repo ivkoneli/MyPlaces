@@ -82,6 +82,45 @@ class UserViewModel : ViewModel() {
             }
     }
 
+    fun fetchUserAvatars(usernames: List<String>, onComplete: (Map<String, String?>) -> Unit) {
+        db.collection("users")
+            .whereIn("username", usernames)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val map = snapshot.associate { doc ->
+                    val username = doc.getString("username") ?: ""
+                    val avatar = doc.getString("avatarUrl") ?: doc.getString("localAvatarPath")
+                    username to avatar
+                }
+                onComplete(map)
+            }
+            .addOnFailureListener {
+                onComplete(emptyMap())
+            }
+    }
+
+
+
+    fun updateAvatarPath(path: String) {
+        currentUser.value = currentUser.value?.copy(localAvatarPath = path)
+        currentUser.value?.let { user ->
+            db.collection("users").document(user.uid)
+                .update("localAvatarPath", path)
+        }
+    }
+
+    // Update drawable ID
+    fun updateAvatarDrawable(drawableId: Int) {
+        val path = "drawable://$drawableId" // pretvaramo int u String
+        currentUser.value = currentUser.value?.copy(localAvatarPath = path)
+        currentUser.value?.let { user ->
+            FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(user.uid)
+                .update("localAvatarPath", path)
+        }
+    }
+
 
     fun disownPokemon(userId: String, pokemonId: String, onComplete: (Boolean) -> Unit) {
         val userRef = db.collection("users").document(userId)

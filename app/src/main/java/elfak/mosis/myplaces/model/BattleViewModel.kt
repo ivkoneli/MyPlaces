@@ -61,6 +61,7 @@ class BattleViewModel : ViewModel() {
 
             logLines.add(if (playerWon) "You won!" else "You lost!")
             if (playerWon) logLines.add("Gained 100 XP!")
+            if (playerWon) enemy.alive = false
 
             battleLog.postValue(logLines.toList())
 

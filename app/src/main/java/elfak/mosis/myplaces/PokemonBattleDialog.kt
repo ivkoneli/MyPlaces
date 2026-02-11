@@ -144,7 +144,8 @@ class PokemonBattleDialog : DialogFragment() {
             currenthp = place.level * 100,
             attack = place.level * 10,
             ownerId = "" ,// prazno dok ne pobedi
-            level = place.level
+            level = place.level,
+            alive = true,
 
         )
 
@@ -247,7 +248,7 @@ class PokemonBattleDialog : DialogFragment() {
             "maxhp" to player.maxhp,
             "currenthp" to player.currenthp.coerceAtLeast(0),
             "attack" to player.attack,
-            "isAlive" to isAlive
+            "alive" to isAlive
         )
 
         db.collection("pokemons")

@@ -7,6 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="light_blue">#D0E8FF</color>
     <color name="button_disabled">#9E9E9E</color> <!-- disabled button / light grey  -->
     <color name="button_enabled">#2196F3</color> <!-- enabled button  / light blue -->
 

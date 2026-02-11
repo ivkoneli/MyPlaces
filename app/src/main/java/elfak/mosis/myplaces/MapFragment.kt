@@ -82,6 +82,8 @@ class MapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val loadingOverlay = view.findViewById<View>(R.id.map_loading_overlay)
+
         var ctx: Context? = getActivity()?.getApplicationContext()
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences((ctx!!)))
         map = requireView().findViewById<MapView>(R.id.map)
@@ -93,9 +95,10 @@ class MapFragment : Fragment() {
             )
         }else {
             setupMap()
-            observeMyPlaces()
+            observeMyPlaces(loadingOverlay)
         }
         super.onViewCreated(view, savedInstanceState)
+
 
         typeChipGroup = view.findViewById(R.id.type_chip_group)
         chipPokemon = view.findViewById(R.id.chip_pokemon)
@@ -405,11 +408,21 @@ class MapFragment : Fragment() {
         myPlacesViewModel.fetchLocations()
 
     }
-    private fun observeMyPlaces() {
-        myPlacesViewModel.myPlacesList.observe(viewLifecycleOwner){ list ->
+    private fun observeMyPlaces(loadingOverlay: View) {
+        myPlacesViewModel.myPlacesList.observe(viewLifecycleOwner) { list ->
+
+            // ⛔ nemamo user lokaciju → ne crtamo ništa
+            if (myPlacesViewModel.currentUserLocation == null) {
+                map.overlays.removeAll { it is Marker }
+                map.invalidate()
+                loadingOverlay.visibility = View.VISIBLE
+                return@observe
+            }
+            loadingOverlay.visibility = View.GONE
             addMyPlaceMarkers(list)
         }
     }
+
 
 
     private fun setMyLocationOverlay()
@@ -429,6 +442,7 @@ class MapFragment : Fragment() {
 
         myLocationOverlay.enableMyLocation()
         myLocationOverlay.enableFollowLocation()
+
         map.overlays.add(myLocationOverlay)
 
         myLocationOverlay.runOnFirstFix {
@@ -581,7 +595,7 @@ class MapFragment : Fragment() {
             pokemons.forEach { pokemon ->
                 val ref = db.collection("pokemons").document(pokemon.id)
                 batch.update(ref, "currenthp", pokemon.maxhp)
-                batch.update(ref, "isAlive", true)
+                batch.update(ref, "alive", true)
             }
 
             // Update lastHealedAt za ovu lokaciju

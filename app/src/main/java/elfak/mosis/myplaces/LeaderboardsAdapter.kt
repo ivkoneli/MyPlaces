@@ -1,5 +1,6 @@
 package elfak.mosis.myplaces
 
+import android.graphics.BitmapFactory
 import elfak.mosis.myplaces.R
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import java.io.File
 
 private const val VIEW_TYPE_TOP3 = 0
 private const val VIEW_TYPE_NORMAL = 1
@@ -16,6 +18,7 @@ class UserLeaderboardAdapter(
     private val onUserClick: (String) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() { // 👈 promenjeno ovde
 
+    private var avatarMap: Map<String, String?> = emptyMap()
 
     class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val avatar: ImageView = itemView.findViewById(R.id.userAvatar)
@@ -47,24 +50,41 @@ class UserLeaderboardAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (users.isEmpty()) return
-        if (holder is Top3ViewHolder) {
-            holder.bind(users.take(3), onUserClick)
 
+        if (holder is Top3ViewHolder) {
+            holder.bind(users.take(3), avatarMap, onUserClick)
         } else if (holder is UserViewHolder) {
-            val dataIndex = position - 1 + 3 // jer pozicija u RecyclerView: 0 = Top3, 1..n = normalni
+            val dataIndex = position - 1 + 3
             if (dataIndex >= users.size) return
             val (username, wins) = users[dataIndex]
+
             holder.rank.text = "#${dataIndex + 1}"
-            holder.avatar.setImageResource(R.drawable.ic_pokemon_placeholder)
             holder.username.text = username
             holder.wins.text = "🏆  $wins"
 
-            holder.itemView.setOnClickListener {
-                onUserClick(username)
+            // load avatar ako postoji
+            val avatarPath = avatarMap[username]
+            if (!avatarPath.isNullOrEmpty()) {
+                if (avatarPath.startsWith("drawable://")) {
+                    val resId = avatarPath.removePrefix("drawable://").toInt()
+                    holder.avatar.setImageResource(resId)
+                } else {
+                    val file = File(avatarPath)
+                    if (file.exists()) {
+                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                        holder.avatar.setImageBitmap(bitmap)
+                    } else {
+                        holder.avatar.setImageResource(R.drawable.ic_pokemon_placeholder)
+                    }
+                }
+            } else {
+                holder.avatar.setImageResource(R.drawable.ic_pokemon_placeholder)
             }
+
+
+            holder.itemView.setOnClickListener { onUserClick(username) }
         }
     }
-
 
     override fun getItemViewType(position: Int): Int {
         return if (position == 0) VIEW_TYPE_TOP3 else VIEW_TYPE_NORMAL
@@ -72,6 +92,11 @@ class UserLeaderboardAdapter(
 
     fun updateData(newUsers: List<Pair<String, Int>>) {
         users = newUsers
+        notifyDataSetChanged()
+    }
+
+    fun updateAvatars(newAvatarMap: Map<String, String?>) {
+        avatarMap = newAvatarMap
         notifyDataSetChanged()
     }
 }

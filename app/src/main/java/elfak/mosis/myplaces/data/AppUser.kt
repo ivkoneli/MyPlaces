@@ -8,5 +8,7 @@ data class AppUser(
     var xp: Int = 0,
     var pokemonIds: List<String> = emptyList(),
     var wins: Int = 0,
-    var loses: Int = 0
+    var loses: Int = 0,
+    var avatarUrl : String? = null,
+    var localAvatarPath: String? = null // novi property za lokalnu sliku
 )

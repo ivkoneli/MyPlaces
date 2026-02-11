@@ -60,7 +60,6 @@ class LeaderboardFragment : Fragment(R.layout.fragment_leaderboard) {
             selected.setBackgroundColor(Color.parseColor("#DDF4FF")) // svetla plava
             other.setBackgroundColor(Color.parseColor("#A3CBEF")) // normalna plava
 
-            // “Izdignuto” efekt
             val scale = 1.05f
             selected.scaleX = scale
             selected.scaleY = scale
@@ -68,26 +67,47 @@ class LeaderboardFragment : Fragment(R.layout.fragment_leaderboard) {
             other.scaleY = 1f
         }
 
+
+        // Funkcija za load leaderboard + fetch avatara
+        fun loadLeaderboard(fetchWins: Boolean) {
+            if (fetchWins) {
+                userViewModel.fetchUserWins { userWins ->
+                    val topList = userWins.take(50)
+                    adapter.updateData(topList)
+
+                    val usernames = topList.map { it.first }
+                    userViewModel.fetchUserAvatars(usernames) { avatarMap ->
+                        adapter.updateAvatars(avatarMap)
+                    }
+                }
+            } else {
+                userViewModel.fetchUserLevels { userLevels ->
+                    val topList = userLevels.take(50)
+                    adapter.updateData(topList)
+
+                    val usernames = topList.map { it.first }
+                    userViewModel.fetchUserAvatars(usernames) { avatarMap ->
+                        adapter.updateAvatars(avatarMap)
+                    }
+                }
+            }
+        }
+
+
         // inicijalno: Wins tab selektovan
         selectTab(btnWins, btnLevel)
-        userViewModel.fetchUserWins { userWins ->
-            adapter.updateData(userWins.take(50))
-        }
+        loadLeaderboard(fetchWins = true)
 
         // klik na Wins
         btnWins.setOnClickListener {
             selectTab(btnWins, btnLevel)
-            userViewModel.fetchUserWins { userWins ->
-                adapter.updateData(userWins.take(50))
-            }
+            loadLeaderboard(fetchWins = true)
         }
 
         // klik na Level
         btnLevel.setOnClickListener {
             selectTab(btnLevel, btnWins)
-            userViewModel.fetchUserLevels { userLevels ->
-                adapter.updateData(userLevels.take(50))
-            }
+            loadLeaderboard(fetchWins = false)
         }
     }
 }

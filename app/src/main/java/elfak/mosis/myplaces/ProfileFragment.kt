@@ -1,15 +1,25 @@
 package elfak.mosis.myplaces
 
+import AvatarAdapter
 import PokemonAdapter
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.Outline
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.view.ViewOutlineProvider
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
@@ -18,6 +28,9 @@ import elfak.mosis.myplaces.data.AppUser
 import elfak.mosis.myplaces.data.Pokemon
 import elfak.mosis.myplaces.model.UserViewModel
 import org.w3c.dom.Text
+import com.google.firebase.storage.FirebaseStorage
+import java.io.File
+import java.io.FileOutputStream
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -41,10 +54,13 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private var isAscending = false // default descending
     private var visitedUsername: String? = null
 
+    private lateinit var avatarImage: ImageView
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         visitedUsername = arguments?.getString("username") // username od posete, ako postoji
+        avatarImage = view.findViewById(R.id.avatarImage)
 
         logoutBtn = view.findViewById(R.id.btnLogout)
         usernameText = view.findViewById(R.id.usernameInput)
@@ -120,6 +136,50 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 R.id.action_ProfileFragment_to_LoginFragment
             )
         }
+
+        avatarImage.setOnClickListener {
+            if (visitedUsername != null) return@setOnClickListener // samo svoj profil
+
+            val avatarList = listOf(
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar,
+                R.drawable.ic_avatar
+            )
+
+            val dialogView = layoutInflater.inflate(R.layout.dialog_avatar_picker, null)
+            val gridView = dialogView.findViewById<GridView>(R.id.gridAvatars)
+
+            gridView.adapter = AvatarAdapter(requireContext(), avatarList) { selected ->
+                if (selected != null) {
+                    avatarImage.setImageResource(selected)
+                    userViewModel.updateAvatarDrawable(selected)
+                } else {
+                    pickImageFromGallery()
+                }
+            }
+
+            AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        avatarImage.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) {
+                val size = view.width.coerceAtMost(view.height)
+                outline.setOval(0, 0, size, size)
+            }
+        }
+        avatarImage.clipToOutline = true
+
+
         // Spinner za sortiranje
         ArrayAdapter.createFromResource(
             requireContext(),
@@ -172,6 +232,29 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         winsText.text = "Wins: ${user.wins}"
         loseText.text = "Loses: ${user.loses}"
 
+        val avatarPath = user.localAvatarPath
+        when {
+            !user.avatarUrl.isNullOrEmpty() -> {
+                Glide.with(this)
+                    .load(user.avatarUrl)
+                    .placeholder(R.drawable.ic_pokemon_placeholder)
+                    .into(avatarImage)
+            }
+            !avatarPath.isNullOrEmpty() -> {
+                if (avatarPath.startsWith("drawable://")) {
+                    val resId = avatarPath.removePrefix("drawable://").toInt()
+                    avatarImage.setImageResource(resId)
+                } else {
+                    val bitmap = BitmapFactory.decodeFile(avatarPath)
+                    avatarImage.setImageBitmap(bitmap)
+                }
+            }
+            else -> {
+                avatarImage.setImageResource(R.drawable.ic_pokemon_placeholder)
+            }
+        }
+
+
         userViewModel.fetchUserPokemons(user.uid) { pokemons ->
             currentPokemons = pokemons
             refreshPokemonList()
@@ -183,7 +266,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         // filtriranje po "Alive"
         var filtered = if (checkboxAlive.isChecked) {
-            currentPokemons.filter { it.currenthp > 0 }
+            currentPokemons.filter { it.alive  }
         } else {
             currentPokemons
         }
@@ -202,7 +285,46 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             filtered = filtered.reversed()
         }
 
+        adapter.submitList(null)
         adapter.submitList(filtered.map { it.copy() })
+
+        adapter.notifyDataSetChanged()
+    }
+
+    // --- Lokalno čuvanje galerije ---
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            avatarImage.setImageURI(it)
+            saveAvatarLocally(it)?.let { path ->
+                userViewModel.updateAvatarPath(path) // update u viewmodelu
+            }
+        }
+    }
+
+    private fun pickImageFromGallery() { pickImageLauncher.launch("image/*") }
+
+    private fun saveAvatarLocally(uri: Uri): String? {
+        val context = requireContext()
+        try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+
+            val avatarDir = File(context.filesDir, "avatars")
+            if (!avatarDir.exists()) avatarDir.mkdir()
+
+            val userId = userViewModel.currentUser.value?.uid ?: "default"
+            val file = File(avatarDir, "avatar_$userId.png")
+            val outputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            outputStream.flush()
+            outputStream.close()
+
+            return file.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
     }
 
     override fun onResume() {
