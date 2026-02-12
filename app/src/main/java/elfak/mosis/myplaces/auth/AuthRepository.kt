@@ -1,5 +1,6 @@
 package elfak.mosis.myplaces.auth
 
+import android.net.Uri
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -52,9 +53,12 @@ class AuthRepository {
     }
 
     fun register(
-        username : String,
+        username: String,
         email: String,
         password: String,
+        phone: String,
+        avatarDrawable: Int?,
+        avatarUri: Uri?,
         onSuccess: (AppUser) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -65,9 +69,14 @@ class AuthRepository {
                 val newUser = AppUser(
                     uid = uid,
                     username = username,
-                    xp = 0,
+                    phone = phone,
                     level = 1,
-                    pokemonIds = emptyList()
+                    xp = 0,
+                    pokemonIds = emptyList(),
+                    wins = 0,
+                    loses = 0,
+                    avatarUrl = avatarDrawable?.toString(),
+                    localAvatarPath = avatarUri?.toString()
                 )
 
                 db.collection("users").document(uid)
@@ -83,6 +92,8 @@ class AuthRepository {
                 onError(it.message ?: "Register failed")
             }
     }
+
+
 
     fun addStarterPokemon(
         ownerId : String,

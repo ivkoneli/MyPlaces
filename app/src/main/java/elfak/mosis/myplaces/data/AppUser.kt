@@ -4,6 +4,7 @@ package elfak.mosis.myplaces.data
 data class AppUser(
     var uid: String = "",
     var username: String = "",
+    var phone: String = "",
     var level: Int = 1,
     var xp: Int = 0,
     var pokemonIds: List<String> = emptyList(),

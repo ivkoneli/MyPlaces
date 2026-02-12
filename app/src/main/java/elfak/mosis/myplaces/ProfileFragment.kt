@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewOutlineProvider
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -55,6 +56,9 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private var visitedUsername: String? = null
 
     private lateinit var avatarImage: ImageView
+    private var cameraPhotoUri: Uri? = null
+    private var cameraFilePath: String? = null
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -156,20 +160,45 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             val dialogView = layoutInflater.inflate(R.layout.dialog_avatar_picker, null)
             val gridView = dialogView.findViewById<GridView>(R.id.gridAvatars)
 
-            gridView.adapter = AvatarAdapter(requireContext(), avatarList) { selected ->
-                if (selected != null) {
-                    avatarImage.setImageResource(selected)
-                    userViewModel.updateAvatarDrawable(selected)
-                } else {
-                    pickImageFromGallery()
+            gridView.adapter = AvatarAdapter(requireContext(), avatarList) { selected, isCamera ->
+                when {
+                    selected != null -> { // drawable
+                        avatarImage.setImageResource(selected)
+                        userViewModel.updateAvatarDrawable(selected)
+                    }
+                    isCamera -> {
+                        val avatarDir = File(requireContext().filesDir, "avatars")
+                        if (!avatarDir.exists()) avatarDir.mkdir()
+
+                        val file = File(
+                            avatarDir,
+                            "avatar_camera_${System.currentTimeMillis()}.png"
+                        )
+                        cameraFilePath = file.absolutePath
+
+                        val uri = FileProvider.getUriForFile(
+                            requireContext(),
+                            "${requireContext().packageName}.fileprovider",
+                            file
+                        )
+
+                        cameraPhotoUri = uri
+                        takePictureLauncher.launch(uri)
+                    }
+
+                    else -> { // galerija
+                        pickImageFromGallery()
+                    }
                 }
             }
+
 
             AlertDialog.Builder(requireContext())
                 .setView(dialogView)
                 .setNegativeButton("Cancel", null)
                 .show()
         }
+
 
         avatarImage.outlineProvider = object : ViewOutlineProvider() {
             override fun getOutline(view: View, outline: Outline) {
@@ -302,6 +331,13 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     private fun pickImageFromGallery() { pickImageLauncher.launch("image/*") }
+
+    private val takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success && cameraPhotoUri != null && cameraFilePath != null) {
+            avatarImage.setImageURI(cameraPhotoUri)
+            userViewModel.updateAvatarPath(cameraFilePath!!)
+        }
+    }
 
     private fun saveAvatarLocally(uri: Uri): String? {
         val context = requireContext()

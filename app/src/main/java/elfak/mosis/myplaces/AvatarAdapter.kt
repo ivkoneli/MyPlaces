@@ -9,10 +9,10 @@ import elfak.mosis.myplaces.R
 class AvatarAdapter(
     private val context: Context,
     private val avatars: List<Int>, // drawable res IDs
-    private val onClick: (Int?) -> Unit // Int? = drawable id, null = galerija
+    private val onClick: (Int?, Boolean) -> Unit // Int? = drawable, null = galerija ili kamera, Boolean = isCamera
 ) : BaseAdapter() {
 
-    override fun getCount() = avatars.size + 1 // +1 za galeriju
+    override fun getCount() = avatars.size + 2 // +1 galerija, +1 kamera
 
     override fun getItem(position: Int): Any? =
         if (position < avatars.size) avatars[position] else null
@@ -28,14 +28,18 @@ class AvatarAdapter(
         }
 
 
-        if (position < avatars.size) {
-            imageView.setImageResource(avatars[position])
-        } else {
-            imageView.setImageResource(R.drawable.ic_home) // "+" ikonca za galeriju
+        when {
+            position < avatars.size -> imageView.setImageResource(avatars[position])
+            position == avatars.size -> imageView.setImageResource(R.drawable.ic_home) // + galerija
+            else -> imageView.setImageResource(R.drawable.ic_sort) // + kamera
         }
 
         imageView.setOnClickListener {
-            onClick(if (position < avatars.size) avatars[position] else null)
+            when {
+                position < avatars.size -> onClick(avatars[position], false)
+                position == avatars.size -> onClick(null, false)  // galerija
+                else -> onClick(null, true) // kamera
+            }
         }
 
         return imageView
