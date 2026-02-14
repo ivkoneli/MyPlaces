@@ -82,11 +82,12 @@ class AuthRepository {
                 db.collection("users").document(uid)
                     .set(newUser)
                     .addOnSuccessListener {
-                        addStarterPokemon(uid, onSuccess, onError)
+                        onSuccess(newUser) // tek ovde javljamo fragmentu da je sve ok
                     }
-                    .addOnFailureListener {
-                        onError(it.message ?: "Failed to create user profile")
+                    .addOnFailureListener { e ->
+                        onError("Failed to create user document: ${e.message}")
                     }
+
             }
             .addOnFailureListener {
                 onError(it.message ?: "Register failed")
@@ -95,36 +96,35 @@ class AuthRepository {
 
 
 
+
     fun addStarterPokemon(
-        ownerId : String,
+        ownerId: String,
+        starterPokemon: Pokemon,
         onSuccess: (AppUser) -> Unit,
         onError: (String) -> Unit
-    ){
-        val starterPokemon = Pokemon(
-            name = "Pikachu",
-            maxhp = 100,
-            currenthp = 100,
-            attack = 15,
-            ownerId = ownerId,
-            level = 1,
-            alive = true
-        )
+    ) {
+
+        val pokemonToSave = starterPokemon.copy(ownerId = ownerId)
+
         db.collection("pokemons")
-            .add(starterPokemon)
+            .add(pokemonToSave)
             .addOnSuccessListener { docRef ->
+
                 db.collection("users").document(ownerId)
-                    .update("pokemonIds", listOf(docRef.id))
+                    .update("pokemonIds", FieldValue.arrayUnion(docRef.id))
                     .addOnSuccessListener {
                         fetchAppUser(ownerId, onSuccess, onError)
                     }
                     .addOnFailureListener { e ->
                         onError("Failed to update user's pokemonIds: ${e.message}")
                     }
+
             }
             .addOnFailureListener { e ->
                 onError("Failed to create starter Pokemon: ${e.message}")
             }
     }
+
 
     fun addPokemonToUser(
         pokemon: Pokemon,

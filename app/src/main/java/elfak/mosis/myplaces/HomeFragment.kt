@@ -9,6 +9,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import elfak.mosis.myplaces.auth.AuthRepository
+import elfak.mosis.myplaces.data.Pokemon
 import elfak.mosis.myplaces.databinding.FragmentHomeBinding
 import elfak.mosis.myplaces.model.UserViewModel
 import org.w3c.dom.Text
@@ -20,8 +22,11 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val userViewModel : UserViewModel by activityViewModels()
+    private lateinit var bottomNav: BottomNavigationView
+
 
     private val binding get() = _binding!!
+    private val authRepo = AuthRepository()
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -38,8 +43,16 @@ class HomeFragment : Fragment() {
 
         val welcomeCardUser = view.findViewById<TextView>(R.id.welcome_card_user)
         val btnExplore = view.findViewById<Button>(R.id.btn_explore)
+        bottomNav = view.findViewById(R.id.bottomNav)
 
         val user = userViewModel.currentUser.value
+
+        userViewModel.currentUser.observe(viewLifecycleOwner) { user ->
+            if (user != null && user.pokemonIds.isEmpty()) {
+                showStarterDialog()
+                bottomNav.isEnabled = false
+            }
+        }
 
         if (user != null) {
             welcomeCardUser.text  = user.username
@@ -49,7 +62,7 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.MapFragment)
         }
 
-        val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
+
         val navController = findNavController()
         bottomNav.selectedItemId = R.id.HomeFragment
 
@@ -66,6 +79,65 @@ class HomeFragment : Fragment() {
             }
         }
     }
+
+    private fun showStarterDialog() {
+
+        val dialog = StarterDialog { selectedPokemon ->
+
+            val user = userViewModel.currentUser.value ?: return@StarterDialog
+
+            val pokemon = when (selectedPokemon) {
+                "Pikachu" -> Pokemon(
+                    name = "Pikachu",
+                    maxhp = 100,
+                    currenthp = 100,
+                    attack = 15,
+                    ownerId = user.uid,
+                    level = 1,
+                    alive = true
+                )
+
+                "Charmander" -> Pokemon(
+                    name = "Charmander",
+                    maxhp = 80,
+                    currenthp = 80,
+                    attack = 20,
+                    ownerId = user.uid,
+                    level = 1,
+                    alive = true
+                )
+
+                "Bulbasaur" -> Pokemon(
+                    name = "Bulbasaur",
+                    maxhp = 120,
+                    currenthp = 120,
+                    attack = 10,
+                    ownerId = user.uid,
+                    level = 1,
+                    alive = true
+                )
+
+                else -> return@StarterDialog
+            }
+
+            authRepo.addStarterPokemon(
+                user.uid,
+                pokemon,
+                onSuccess = {updatedUser ->
+                    userViewModel.currentUser.value = updatedUser
+                    bottomNav.isEnabled = true
+                },
+                onError = {
+                    // toast
+                }
+            )
+        }
+
+        dialog.show(parentFragmentManager, "StarterDialog")
+    }
+
+
+
 
 
     override fun onDestroyView() {

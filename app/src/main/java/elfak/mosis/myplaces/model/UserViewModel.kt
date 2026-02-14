@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import elfak.mosis.myplaces.auth.AuthRepository
 import elfak.mosis.myplaces.data.AppUser
 import elfak.mosis.myplaces.data.Pokemon
 
@@ -16,6 +17,19 @@ class UserViewModel : ViewModel() {
     var visitedUserId: String? = null
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
+
+
+    fun refreshCurrentUser(ownerId: String, onComplete: ((Boolean) -> Unit)? = null) {
+        val authRepo = AuthRepository()  // INSTANCA
+        authRepo.fetchAppUser(ownerId, { user ->
+            currentUser.value = user
+            onComplete?.invoke(true)
+        }, { error ->
+            onComplete?.invoke(false)
+        })
+    }
+
+
 
     fun fetchUserPokemons(ownerId: String, onComplete: (List<Pokemon>) -> Unit) {
         db.collection("pokemons")
@@ -121,7 +135,6 @@ class UserViewModel : ViewModel() {
         }
     }
 
-
     fun disownPokemon(userId: String, pokemonId: String, onComplete: (Boolean) -> Unit) {
         val userRef = db.collection("users").document(userId)
         val pokemonRef = db.collection("pokemons").document(pokemonId)
@@ -132,7 +145,10 @@ class UserViewModel : ViewModel() {
                 // 2️⃣ Brišemo dokument Pokemona iz pokemons kolekcije
                 pokemonRef.delete()
                     .addOnSuccessListener {
-                        onComplete(true)
+                        // 3️⃣ Update LiveData preko AuthRepository
+                        refreshCurrentUser(userId) { success ->
+                            onComplete(success)
+                        }
                     }
                     .addOnFailureListener { e ->
                         e.printStackTrace()
@@ -144,6 +160,7 @@ class UserViewModel : ViewModel() {
                 onComplete(false)
             }
     }
+
 
 
 

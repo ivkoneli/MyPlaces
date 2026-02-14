@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="400dp"
+    android:orientation="vertical"
+    android:background="#FFEEEEEE"
+    android:padding="16dp">
+
+    <!-- TITLE -->
+    <TextView
+        android:id="@+id/dialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Choose Your Starter Pokémon"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="#000000"
+        android:paddingBottom="16dp"/>
+
+    <!-- ROW -->
+    <LinearLayout
+        android:id="@+id/rowOptions"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- PIKACHU -->
+        <FrameLayout
+            android:id="@+id/framePikachu"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="4dp">
+
+            <LinearLayout
+                android:id="@+id/optionPikachu"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#FFE066"
+                android:padding="8dp">
+
+                <ImageView
+                    android:id="@+id/imgPikachu"
+                    android:layout_width="85dp"
+                    android:layout_height="85dp"
+                    android:src="@drawable/ic_pikachu"
+                    android:contentDescription="Pikachu"/>
+
+                <TextView
+                    android:id="@+id/textPikachuName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pikachu"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginTop="6dp"/>
+
+                <TextView
+                    android:id="@+id/textPikachuStats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="❤️ 100 ⚔ 15"
+                    android:layout_marginTop="4dp"/>
+
+                <Button
+                    android:id="@+id/btnPickPikachu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Choose"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="#E6B800"/>
+            </LinearLayout>
+
+            <!-- overlay za blink -->
+            <View
+                android:id="@+id/overlayPikachu"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#80FFFFFF"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <!-- CHARMANDER -->
+        <FrameLayout
+            android:id="@+id/frameCharmander"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="4dp">
+
+            <LinearLayout
+                android:id="@+id/optionCharmander"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#FF6B6B"
+                android:padding="8dp">
+
+                <ImageView
+                    android:id="@+id/imgCharmander"
+                    android:layout_width="85dp"
+                    android:layout_height="85dp"
+                    android:src="@drawable/ic_charmander"
+                    android:contentDescription="Charmander"/>
+
+                <TextView
+                    android:id="@+id/textCharmanderName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Charmander"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginTop="6dp"/>
+
+                <TextView
+                    android:id="@+id/textCharmanderStats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="❤️ 80 ⚔ 20"
+                    android:layout_marginTop="4dp"/>
+
+                <Button
+                    android:id="@+id/btnPickCharmander"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Choose"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="#D84315"/>
+            </LinearLayout>
+
+            <!-- overlay za blink -->
+            <View
+                android:id="@+id/overlayCharmander"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#80FFFFFF"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <!-- BULBASAUR -->
+        <FrameLayout
+            android:id="@+id/frameBulbasaur"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="4dp">
+
+            <LinearLayout
+                android:id="@+id/optionBulbasaur"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#6BCB77"
+                android:padding="8dp">
+
+                <ImageView
+                    android:id="@+id/imgBulbasaur"
+                    android:layout_width="85dp"
+                    android:layout_height="85dp"
+                    android:src="@drawable/ic_bulbasaur"
+                    android:contentDescription="Bulbasaur"/>
+
+                <TextView
+                    android:id="@+id/textBulbasaurName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bulbasaur"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginTop="6dp"/>
+
+                <TextView
+                    android:id="@+id/textBulbasaurStats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="❤️ 120 ⚔ 10"
+                    android:layout_marginTop="4dp"/>
+
+                <Button
+                    android:id="@+id/btnPickBulbasaur"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Choose"
+                    android:textAllCaps="false"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="#2E7D32"/>
+            </LinearLayout>
+
+            <!-- overlay za blink -->
+            <View
+                android:id="@+id/overlayBulbasaur"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#80FFFFFF"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

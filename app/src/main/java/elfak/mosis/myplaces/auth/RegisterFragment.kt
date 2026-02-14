@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
@@ -166,10 +167,15 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                 selectedAvatarDrawable,
                 selectedAvatarUri,
                 onSuccess = { appUser ->
+                    Log.d("REGISTER", "User created: $appUser")
+                    Toast.makeText(requireContext(), "User created: ${appUser.username}", Toast.LENGTH_SHORT).show()
                     userViewModel.currentUser.value = appUser
+                    Log.d("REGISTER", "Navigating to HomeFragment")
                     findNavController().navigate(R.id.action_register_to_home)
-                },
+                }
+,
                 onError = { msg ->
+                    Log.d("REGISTER", "Nije uspelo ??")
                     Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
                 }
             )
