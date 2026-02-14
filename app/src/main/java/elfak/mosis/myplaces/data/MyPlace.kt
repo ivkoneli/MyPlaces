@@ -12,7 +12,8 @@ data class MyPlace(
     var type: String = "Pokemon",
     var userID: String = "",
     var lastCollectedAt: Long? = null,
-    var lastHealedAt: Long? = null
+    var lastHealedAt: Long? = null,
+    var date: Long = System.currentTimeMillis()
 
 ) : Parcelable{
     override fun toString(): String = name

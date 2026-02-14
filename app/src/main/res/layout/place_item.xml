@@ -1,0 +1,42 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="200dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="@drawable/rounded_bg"
+    android:elevation="4dp">
+
+    <ImageView
+        android:id="@+id/placeImage"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/poke_stop"/>
+
+    <TextView
+        android:id="@+id/placeName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Place Name"
+        android:textColor="@android:color/black"
+        android:textSize="14sp"
+        android:ellipsize="end"
+        android:maxLines="1"/>
+
+    <TextView
+        android:id="@+id/placeType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Type"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/placeDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="01/01/2026"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="12sp"/>
+
+</LinearLayout>

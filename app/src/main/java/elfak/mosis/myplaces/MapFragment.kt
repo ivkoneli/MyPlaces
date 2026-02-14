@@ -15,14 +15,18 @@ import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
+import android.R.layout.simple_dropdown_item_1line
 import androidx.preference.PreferenceManager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.slider.Slider
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
@@ -49,6 +53,14 @@ class MapFragment : Fragment() {
     private lateinit var locationProvider: GpsMyLocationProvider
     private lateinit var myLocationOverlay: MyLocationNewOverlay
     lateinit var map: MapView
+
+    private lateinit var adapter: FilteredListAdapter
+
+    private val sortOptions = listOf("Distance", "Level", "Date")
+    private lateinit var sortDropdown: MaterialAutoCompleteTextView
+    private var currentSort = "Distance"  // default
+
+
     private val locationViewModel: LocationViewModel by activityViewModels()
     private val myPlacesViewModel: MyPlacesViewModel by activityViewModels()
     private val userViewModel : UserViewModel by activityViewModels()
@@ -97,6 +109,36 @@ class MapFragment : Fragment() {
             setupMap()
             observeMyPlaces(loadingOverlay)
         }
+
+        adapter = FilteredListAdapter { place ->
+            val lat = place.latitude.toDoubleOrNull() ?: 0.0
+            val lon = place.longitude.toDoubleOrNull() ?: 0.0
+            map.controller.setCenter(GeoPoint(lat, lon))
+        }
+        // Setup horizontal RecyclerView
+        val recyclerView = view.findViewById<RecyclerView>(R.id.placesRecyclerView)
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        val sortSpinner: Spinner = view.findViewById(R.id.sortSpinner)
+
+
+        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>, view: View?, position: Int, id: Long
+            ) {
+                val selected = parent.getItemAtPosition(position).toString()
+                currentSort = selected
+                sortMyPlaces()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+
+        val defaultIndex = resources.getStringArray(R.array.sort_options).indexOf("Distance")
+        if (defaultIndex >= 0) sortSpinner.setSelection(defaultIndex)
+
         super.onViewCreated(view, savedInstanceState)
 
 
@@ -420,6 +462,8 @@ class MapFragment : Fragment() {
             }
             loadingOverlay.visibility = View.GONE
             addMyPlaceMarkers(list)
+
+            sortMyPlaces()
         }
     }
 
@@ -680,6 +724,28 @@ class MapFragment : Fragment() {
         }
     }
 
+    private fun distanceInMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Float {
+        val results = FloatArray(1)
+        android.location.Location.distanceBetween(lat1, lon1, lat2, lon2, results)
+        return results[0]
+    }
+
+    private fun sortMyPlaces() {
+        val list = myPlacesViewModel.myPlacesList.value ?: return
+        val sortedList = when(currentSort) {
+            "Distance" -> {
+                val userLoc = myPlacesViewModel.currentUserLocation
+                if (userLoc != null) {
+                    list.sortedBy { distanceInMeters(userLoc.first, userLoc.second, it.latitude.toDouble(), it.longitude.toDouble()).toDouble() }
+                } else list
+            }
+            "Level" -> list.sortedByDescending { it.level }
+            "Date" -> list.sortedByDescending { it.date ?: System.currentTimeMillis() } // default danasnji datum
+            else -> list
+        }
+
+        adapter.submitList(sortedList)
+    }
 
 
     override fun onPrepareOptionsMenu(menu: Menu) {
