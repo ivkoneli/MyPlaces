@@ -41,6 +41,7 @@ class PokemonBattleDialog : DialogFragment() {
     private val authRepo = AuthRepository()
     private lateinit var pokemonList: RecyclerView
     private lateinit var battleLog: TextView
+    private var battleWonProcessed = false
 
 
     override fun onStart() {
@@ -180,7 +181,10 @@ class PokemonBattleDialog : DialogFragment() {
 
             battleViewModel.startBattle(
                 onWin = { defeatedPokemon ->
-                    addBattleXP(user)
+                    if (!battleWonProcessed) {
+                        addBattleXP(user) // dodaj XP i win samo jednom
+                        battleWonProcessed = true
+                    }
                     playerPoke.addBattleXP(100)
                     updatePokemonAfterBattle(playerPoke)
 
@@ -278,7 +282,7 @@ class PokemonBattleDialog : DialogFragment() {
         var newXp = user.xp + 100
         var newLevel = user.level
         var xpThreshold = user.level * 100
-        var newWins = user.wins + 1
+        var newWins = user.wins +1
 
         // Proveravamo level up dokle god XP prelazi threshold
         while (newXp >= xpThreshold && newLevel < 30) {
@@ -408,7 +412,7 @@ class PokemonBattleDialog : DialogFragment() {
         authRepo.addPokemonToUser(
             pokemon = pokemon,
             ownerId = user.uid,
-            onSuccess = { addBattleXP(user) },
+            onSuccess = {},
             onError = { Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
         )
     }

@@ -21,7 +21,7 @@ class StarterDialog(
     override fun onStart() {
         super.onStart()
         dialog?.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.95).toInt(), // 90% width ekrana
+            (resources.displayMetrics.widthPixels * 1.0).toInt(), // 100% width ekrana
             (resources.displayMetrics.heightPixels * 0.5).toInt() // fiksnih 50% height ekrana
         )
     }

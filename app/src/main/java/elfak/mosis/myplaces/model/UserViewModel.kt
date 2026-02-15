@@ -82,13 +82,16 @@ class UserViewModel : ViewModel() {
     }
 
     fun fetchUserByUsername(username: String, onComplete: (AppUser?) -> Unit) {
+        Log.d("ProfileFragment", "Fetching username: $username")
         db.collection("users")
             .whereEqualTo("username", username)
             .limit(1)
             .get()
             .addOnSuccessListener { snapshot ->
                 val doc = snapshot.documents.firstOrNull()
+                Log.d("ProfileFragment", "Firestore doc: $doc") // <- vidi da li dokument postoji
                 val user = doc?.toObject(AppUser::class.java)?.apply { this.uid = doc.id }
+                Log.d("ProfileFragment", "Mapped user: $user") // <- da li toObject uspeva
                 onComplete(user)
             }
             .addOnFailureListener {

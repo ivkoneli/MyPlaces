@@ -44,7 +44,7 @@
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_pokemon_placeholder"
                 android:visibility="visible" />
-    </FrameLayout>
+        </FrameLayout>
 
 
 

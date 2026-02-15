@@ -29,19 +29,28 @@
             android:layout_width="100dp"
             android:layout_height="64dp"
             android:text="Capture"
-            android:textSize="18sp"
             android:gravity="center"
-            android:padding="0dp"/>
+            android:padding="0dp"
+            android:textSize="18sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="10sp"
+            android:autoSizeMaxTextSize="18sp"
+            android:autoSizeStepGranularity="1sp"/>
 
         <Button
             android:id="@+id/btnSkip"
             android:layout_width="100dp"
             android:layout_height="64dp"
             android:text="Skip"
-            android:textSize="20sp"
             android:gravity="center"
             android:layout_marginStart="20dp"
-            android:padding="0dp"/>
+            android:padding="0dp"
+            android:textSize="20sp"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="10sp"
+            android:autoSizeMaxTextSize="20sp"
+            android:autoSizeStepGranularity="1sp"/>
+
 
     </LinearLayout>
 

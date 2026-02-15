@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.Outline
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewOutlineProvider
 import android.widget.*
@@ -110,14 +111,14 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
         val currentUser = userViewModel.currentUser.value
 
-
         if (visitedUsername != null) {
             // Gledamo tuđi profil
             userViewModel.fetchUserByUsername(visitedUsername!!) { user ->
-                user ?: return@fetchUserByUsername
+                if (user == null) return@fetchUserByUsername
                 populateProfileUI(user)
                 logoutBtn.visibility = View.GONE
             }
+
         } else if (currentUser != null) {
             // Gledamo svoj profil
             populateProfileUI(currentUser)
@@ -262,13 +263,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         loseText.text = "Loses: ${user.loses}"
 
         val avatarPath = user.localAvatarPath
+
         when {
-            !user.avatarUrl.isNullOrEmpty() -> {
-                Glide.with(this)
-                    .load(user.avatarUrl)
-                    .placeholder(R.drawable.ic_pokemon_placeholder)
-                    .into(avatarImage)
-            }
             !avatarPath.isNullOrEmpty() -> {
                 if (avatarPath.startsWith("drawable://")) {
                     val resId = avatarPath.removePrefix("drawable://").toInt()
@@ -365,15 +361,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     override fun onResume() {
         super.onResume()
-        val visitedUsername = arguments?.getString("username")
-        if (visitedUsername != null) {
-            userViewModel.fetchUserByUsername(visitedUsername) { user ->
-                user ?: return@fetchUserByUsername
-                populateProfileUI(user)
-            }
-        }
     }
 
 
 }
-

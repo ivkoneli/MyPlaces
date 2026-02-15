@@ -63,14 +63,20 @@
 
                 <TextView
                     android:id="@+id/textPikachuStats"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="❤️ 100 ⚔ 15"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="4dp"
+                    android:maxLines="1"
+                    android:ellipsize="none"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="10sp"
+                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeStepGranularity="1sp"/>
 
                 <Button
                     android:id="@+id/btnPickPikachu"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:text="Choose"
                     android:textAllCaps="false"
@@ -122,14 +128,20 @@
 
                 <TextView
                     android:id="@+id/textCharmanderStats"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="❤️ 80 ⚔ 20"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="4dp"
+                    android:maxLines="1"
+                    android:ellipsize="none"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="10sp"
+                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeStepGranularity="1sp"/>
 
                 <Button
                     android:id="@+id/btnPickCharmander"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:text="Choose"
                     android:textAllCaps="false"
@@ -181,14 +193,20 @@
 
                 <TextView
                     android:id="@+id/textBulbasaurStats"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="❤️ 120 ⚔ 10"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="4dp"
+                    android:maxLines="1"
+                    android:ellipsize="none"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="10sp"
+                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeStepGranularity="1sp"/>
 
                 <Button
                     android:id="@+id/btnPickBulbasaur"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:text="Choose"
                     android:textAllCaps="false"

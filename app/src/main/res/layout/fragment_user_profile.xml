@@ -22,15 +22,29 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <!-- LEVI DEO: Avatar -->
-        <ImageView
-            android:id="@+id/avatarImage"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:src="@drawable/ic_pokemon_placeholder"
-            android:contentDescription="Avatar"
-            android:scaleType="centerCrop"
+        <FrameLayout
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_marginEnd="24dp"
-            android:background="@drawable/ic_pokemon_placeholder"/>
+            android:foregroundGravity="center">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/avatar_frame"/>
+
+            <!-- Avatar slika: manja od rama -->
+            <ImageView
+                android:id="@+id/avatarImage"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="center"
+                android:clipToOutline="true"
+                android:contentDescription="Avatar"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_pokemon_placeholder"
+                android:visibility="visible" />
+        </FrameLayout>
 
         <!-- DESNI DEO: Username i Win/Loss -->
         <LinearLayout

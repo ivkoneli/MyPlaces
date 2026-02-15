@@ -66,6 +66,13 @@ class AuthRepository {
             .addOnSuccessListener {
                 val uid = auth.currentUser!!.uid
 
+                // Priprema localAvatarPath
+                val localAvatarPath = when {
+                    avatarUri != null -> avatarUri.toString() // galerija/kamera
+                    avatarDrawable != null -> "drawable://$avatarDrawable" // drawable
+                    else -> null
+                }
+
                 val newUser = AppUser(
                     uid = uid,
                     username = username,
@@ -75,14 +82,14 @@ class AuthRepository {
                     pokemonIds = emptyList(),
                     wins = 0,
                     loses = 0,
-                    avatarUrl = avatarDrawable?.toString(),
-                    localAvatarPath = avatarUri?.toString()
+                    avatarUrl = null,           // nikad više ne koristi avatarUrl
+                    localAvatarPath = localAvatarPath
                 )
 
                 db.collection("users").document(uid)
                     .set(newUser)
                     .addOnSuccessListener {
-                        onSuccess(newUser) // tek ovde javljamo fragmentu da je sve ok
+                        onSuccess(newUser) // fragment zna da je ok
                     }
                     .addOnFailureListener { e ->
                         onError("Failed to create user document: ${e.message}")
@@ -93,6 +100,7 @@ class AuthRepository {
                 onError(it.message ?: "Register failed")
             }
     }
+
 
 
 
