@@ -71,6 +71,8 @@ class LeaderboardFragment : Fragment(R.layout.fragment_leaderboard) {
         // Funkcija za load leaderboard + fetch avatara
         fun loadLeaderboard(fetchWins: Boolean) {
             if (fetchWins) {
+                adapter.setLevelMode(false)
+
                 userViewModel.fetchUserWins { userWins ->
                     val topList = userWins.take(50)
                     adapter.updateData(topList)
@@ -81,6 +83,8 @@ class LeaderboardFragment : Fragment(R.layout.fragment_leaderboard) {
                     }
                 }
             } else {
+                adapter.setLevelMode(true)
+
                 userViewModel.fetchUserLevels { userLevels ->
                     val topList = userLevels.take(50)
                     adapter.updateData(topList)

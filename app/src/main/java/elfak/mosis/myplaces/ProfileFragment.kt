@@ -1,16 +1,13 @@
 package elfak.mosis.myplaces
 
-import AvatarAdapter
 import PokemonAdapter
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.Outline
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewOutlineProvider
 import android.widget.*
@@ -21,16 +18,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import elfak.mosis.myplaces.data.AppUser
 import elfak.mosis.myplaces.data.Pokemon
 import elfak.mosis.myplaces.model.UserViewModel
-import org.w3c.dom.Text
-import com.google.firebase.storage.FirebaseStorage
 import java.io.File
 import java.io.FileOutputStream
 
@@ -146,16 +139,16 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             if (visitedUsername != null) return@setOnClickListener // samo svoj profil
 
             val avatarList = listOf(
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar,
-                R.drawable.ic_avatar
+                R.drawable.ic_avatar1,
+                R.drawable.ic_avatar2,
+                R.drawable.ic_avatar3,
+                R.drawable.ic_avatar4,
+                R.drawable.ic_avatar5,
+                R.drawable.ic_avatar6,
+                R.drawable.ic_avatar7,
+                R.drawable.ic_avatar8,
+                R.drawable.ic_avatar9,
+                R.drawable.ic_avatar1
             )
 
             val dialogView = layoutInflater.inflate(R.layout.dialog_avatar_picker, null)

@@ -23,30 +23,41 @@ class Top3ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun bind(
         topUsers: List<Pair<String, Int>>,
         avatarMap: Map<String, String?>,
-        onUserClick: (String) -> Unit
+        onUserClick: (String) -> Unit,
+        showLevels: Boolean = false
     ) {
         if (topUsers.isEmpty()) return
 
         fun loadAvatar(username: String, imageView: ImageView) {
             val path = avatarMap[username]
             if (!path.isNullOrEmpty()) {
-                val file = File(path)
-                if (file.exists()) {
-                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                    imageView.setImageBitmap(bitmap)
+                if (path.startsWith("drawable://")) {
+                    val resId = path.removePrefix("drawable://").toInt()
+                    imageView.setImageResource(resId)
                 } else {
-                    imageView.setImageResource(R.drawable.ic_pokemon_placeholder)
+                    val file = File(path)
+                    if (file.exists()) {
+                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                        imageView.setImageBitmap(bitmap)
+                    } else {
+                        imageView.setImageResource(R.drawable.ic_pokemon_placeholder)
+                    }
                 }
             } else {
                 imageView.setImageResource(R.drawable.ic_pokemon_placeholder)
             }
         }
 
+
+        fun formatText(value: Int): String {
+            return if (showLevels) "⭐ $value" else "🏆 $value"
+        }
+
         // gold
         if (topUsers.size > 0) {
-            val (goldName, goldWinsCount) = topUsers[0]
+            val (goldName, goldValue) = topUsers[0]
             goldUsername.text = goldName
-            goldWins.text = "🏆 $goldWinsCount"
+            goldWins.text = formatText(goldValue)
             loadAvatar(goldName, goldAvatar)
 
             goldAvatar.setOnClickListener { onUserClick(goldName) }
@@ -55,9 +66,9 @@ class Top3ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         // silver
         if (topUsers.size > 1) {
-            val (silverName, silverWinsCount) = topUsers[1]
+            val (silverName, silverValue) = topUsers[1]
             silverUsername.text = silverName
-            silverWins.text = "🏆 $silverWinsCount"
+            silverWins.text = formatText(silverValue)
             loadAvatar(silverName, silverAvatar)
 
             silverAvatar.setOnClickListener { onUserClick(silverName) }
@@ -66,9 +77,9 @@ class Top3ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         // bronze
         if (topUsers.size > 2) {
-            val (bronzeName, bronzeWinsCount) = topUsers[2]
+            val (bronzeName, bronzeValue) = topUsers[2]
             bronzeUsername.text = bronzeName
-            bronzeWins.text = "🏆 $bronzeWinsCount"
+            bronzeWins.text = formatText(bronzeValue)
             loadAvatar(bronzeName, bronzeAvatar)
 
             bronzeAvatar.setOnClickListener { onUserClick(bronzeName) }

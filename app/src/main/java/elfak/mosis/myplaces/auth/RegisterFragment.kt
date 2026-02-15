@@ -1,8 +1,7 @@
 package elfak.mosis.myplaces.auth
 
-import AvatarAdapter
+import elfak.mosis.myplaces.AvatarAdapter
 import android.app.AlertDialog
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -14,10 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.auth.FirebaseAuth
-import elfak.mosis.myplaces.MainActivity
 import elfak.mosis.myplaces.R
 import elfak.mosis.myplaces.model.UserViewModel
 import java.io.File
@@ -62,16 +58,16 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         )
 
         val avatarList = listOf(
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar,
-            R.drawable.ic_avatar
+            R.drawable.ic_avatar1,
+            R.drawable.ic_avatar2,
+            R.drawable.ic_avatar3,
+            R.drawable.ic_avatar4,
+            R.drawable.ic_avatar5,
+            R.drawable.ic_avatar6,
+            R.drawable.ic_avatar7,
+            R.drawable.ic_avatar8,
+            R.drawable.ic_avatar9,
+            R.drawable.ic_avatar1
         )
 
         val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->

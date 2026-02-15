@@ -1,10 +1,11 @@
+package elfak.mosis.myplaces
+
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.BaseAdapter
 import android.widget.ImageView
-import elfak.mosis.myplaces.R
 
 class AvatarAdapter(
     private val context: Context,
@@ -30,8 +31,8 @@ class AvatarAdapter(
 
         when {
             position < avatars.size -> imageView.setImageResource(avatars[position])
-            position == avatars.size -> imageView.setImageResource(R.drawable.ic_home) // + galerija
-            else -> imageView.setImageResource(R.drawable.ic_sort) // + kamera
+            position == avatars.size -> imageView.setImageResource(R.drawable.ic_photo) // + galerija
+            else -> imageView.setImageResource(R.drawable.ic_camera) // + kamera
         }
 
         imageView.setOnClickListener {

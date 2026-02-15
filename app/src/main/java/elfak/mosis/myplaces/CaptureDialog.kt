@@ -23,6 +23,11 @@ class CaptureDialog(
     ): View {
         val view = inflater.inflate(R.layout.dialog_capture, container, false)
 
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            (resources.displayMetrics.heightPixels * 0.5).toInt()
+        )
+        
         val captureBtn = view.findViewById<Button>(R.id.btnCapture)
         val skipBtn = view.findViewById<Button>(R.id.btnSkip)
         val titleText = view.findViewById<TextView>(R.id.captureTitle)

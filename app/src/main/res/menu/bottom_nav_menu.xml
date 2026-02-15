@@ -18,7 +18,7 @@
 
     <item
         android:id="@+id/LeaderboardFragment"
-        android:icon="@drawable/ic_leaderborads"
+        android:icon="@drawable/ic_leaderboards"
         android:title="Leaderboard" />
 
     <item

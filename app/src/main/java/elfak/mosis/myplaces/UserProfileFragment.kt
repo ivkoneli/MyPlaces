@@ -1,6 +1,5 @@
 package elfak.mosis.myplaces
 
-import AvatarAdapter
 import PokemonAdapter
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -12,7 +11,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import elfak.mosis.myplaces.data.AppUser
 import elfak.mosis.myplaces.model.UserViewModel
 

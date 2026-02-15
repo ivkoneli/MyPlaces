@@ -34,7 +34,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:padding="4dp">
+            android:padding="2dp">
 
             <LinearLayout
                 android:id="@+id/optionPikachu"
@@ -65,13 +65,16 @@
                     android:id="@+id/textPikachuStats"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="❤️ 100 ⚔ 15"
+                    android:text="❤️ 100  ⚔ 15"
                     android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:textSize="14sp"
                     android:maxLines="1"
-                    android:ellipsize="none"
+                    android:ellipsize="end"
                     android:autoSizeTextType="uniform"
                     android:autoSizeMinTextSize="10sp"
-                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeMaxTextSize="14sp"
                     android:autoSizeStepGranularity="1sp"/>
 
                 <Button
@@ -99,7 +102,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:padding="4dp">
+            android:padding="2dp">
 
             <LinearLayout
                 android:id="@+id/optionCharmander"
@@ -119,25 +122,38 @@
 
                 <TextView
                     android:id="@+id/textCharmanderName"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Charmander"
                     android:textStyle="bold"
-                    android:textSize="16sp"
-                    android:layout_marginTop="6dp"/>
+                    android:textSize="15sp"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:autoSizeTextType="uniform"
+                    android:autoSizeMinTextSize="11sp"
+                    android:autoSizeMaxTextSize="15sp"
+                    android:autoSizeStepGranularity="1sp"/>
+
 
                 <TextView
                     android:id="@+id/textCharmanderStats"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="❤️ 80 ⚔ 20"
+                    android:text="❤️ 80   ⚔ 20"
                     android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:textSize="14sp"
                     android:maxLines="1"
-                    android:ellipsize="none"
+                    android:ellipsize="end"
                     android:autoSizeTextType="uniform"
                     android:autoSizeMinTextSize="10sp"
-                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeMaxTextSize="14sp"
                     android:autoSizeStepGranularity="1sp"/>
+
 
                 <Button
                     android:id="@+id/btnPickCharmander"
@@ -164,7 +180,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:padding="4dp">
+            android:padding="2dp">
 
             <LinearLayout
                 android:id="@+id/optionBulbasaur"
@@ -195,13 +211,16 @@
                     android:id="@+id/textBulbasaurStats"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="❤️ 120 ⚔ 10"
+                    android:text="❤️ 120   ⚔ 10"
                     android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:textSize="14sp"
                     android:maxLines="1"
-                    android:ellipsize="none"
+                    android:ellipsize="end"
                     android:autoSizeTextType="uniform"
                     android:autoSizeMinTextSize="10sp"
-                    android:autoSizeMaxTextSize="16sp"
+                    android:autoSizeMaxTextSize="14sp"
                     android:autoSizeStepGranularity="1sp"/>
 
                 <Button

@@ -12,6 +12,7 @@ import java.io.File
 
 private const val VIEW_TYPE_TOP3 = 0
 private const val VIEW_TYPE_NORMAL = 1
+private var isLevelMode: Boolean = false
 
 class UserLeaderboardAdapter(
     private var users: List<Pair<String, Int>>,
@@ -52,7 +53,7 @@ class UserLeaderboardAdapter(
         if (users.isEmpty()) return
 
         if (holder is Top3ViewHolder) {
-            holder.bind(users.take(3), avatarMap, onUserClick)
+            holder.bind(users.take(3), avatarMap, onUserClick, showLevels = isLevelMode)
         } else if (holder is UserViewHolder) {
             val dataIndex = position - 1 + 3
             if (dataIndex >= users.size) return
@@ -60,7 +61,12 @@ class UserLeaderboardAdapter(
 
             holder.rank.text = "#${dataIndex + 1}"
             holder.username.text = username
-            holder.wins.text = "🏆  $wins"
+            holder.wins.text = if (isLevelMode) {
+                "⭐ $wins"
+            } else {
+                "🏆 $wins"
+            }
+
 
             // load avatar ako postoji
             val avatarPath = avatarMap[username]
@@ -99,4 +105,10 @@ class UserLeaderboardAdapter(
         avatarMap = newAvatarMap
         notifyDataSetChanged()
     }
+
+    fun setLevelMode(levelMode: Boolean) {
+        isLevelMode = levelMode
+        notifyDataSetChanged()
+    }
+
 }
