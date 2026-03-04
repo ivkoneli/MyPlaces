@@ -2,17 +2,11 @@ package elfak.mosis.myplaces
 
 import android.os.Bundle
 import android.view.*
-import android.view.ContextMenu.ContextMenuInfo
-import android.widget.Adapter
 import android.widget.AdapterView
-import android.widget.AdapterView.AdapterContextMenuInfo
 import androidx.fragment.app.Fragment
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import android.widget.Toast
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import elfak.mosis.myplaces.data.MyPlace
@@ -85,7 +79,6 @@ class ListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val bottomNav = view.findViewById<BottomNavigationView>(R.id.bottomNav)
-        val navController = findNavController()
         bottomNav.selectedItemId = R.id.ListFragment
 
         // Bottom nav bar actions
@@ -151,6 +144,6 @@ class ListFragment : Fragment() {
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         val item = menu.findItem(R.id.action_my_places_list)
-        item.isVisible = false ;
+        item.isVisible = false
     }
 }

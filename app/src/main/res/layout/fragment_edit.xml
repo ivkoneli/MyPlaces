@@ -69,6 +69,17 @@
         android:backgroundTint="@color/button_disabled"
         android:textColor="@android:color/white"/>
 
+    <Button
+        android:id="@+id/editmyplace_delete_button"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:text="Delete"
+        android:visibility="gone"
+        android:backgroundTint="@android:color/holo_red_dark"
+        android:textColor="@android:color/white"/>
+
+
     <!-- Donja dva dugmeta: Add i Cancel -->
     <LinearLayout
         android:layout_width="match_parent"

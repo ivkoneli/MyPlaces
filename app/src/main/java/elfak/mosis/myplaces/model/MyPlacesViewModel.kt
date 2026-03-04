@@ -3,6 +3,7 @@ package elfak.mosis.myplaces.model
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import elfak.mosis.myplaces.data.MyPlace
@@ -28,23 +29,33 @@ class MyPlacesViewModel: ViewModel() {
     var currentUserLocation: Pair<Double, Double>? = null // (lat, lon)
 
     var selected: MyPlace? = null
+    private var listenerRegistration: ListenerRegistration? = null
 
     fun fetchLocations() {
-        Firebase.firestore.collection("locations")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val list = snapshot.documents.mapNotNull { doc ->
-                    doc.toObject(MyPlace::class.java)?.apply {
-                        id = doc.id
-                    }
+        // Ukloni prethodni listener ako postoji
+        listenerRegistration?.remove()
+
+        listenerRegistration = Firebase.firestore.collection("locations")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("MyPlacesViewModel", "Failed to fetch locations", error)
+                    return@addSnapshotListener
                 }
-                allPlaces.value = list
-                applyFilters()
-            }
-            .addOnFailureListener { e ->
-                Log.e("MyPlacesViewModel", "Failed to fetch locations", e)
+
+                if (snapshot != null) {
+                    val list = snapshot.documents.mapNotNull { doc ->
+                        doc.toObject(MyPlace::class.java)?.apply { id = doc.id }
+                    }
+                    allPlaces.value = list
+                    applyFilters()
+                }
             }
     }
+    override fun onCleared() {
+        super.onCleared()
+        listenerRegistration?.remove()
+    }
+
     fun fetchUserLocations(currentUserId: String) {
         Firebase.firestore.collection("locations")
             .get()
@@ -83,6 +94,24 @@ class MyPlacesViewModel: ViewModel() {
             }
     }
 
+    fun removeLocation(location: MyPlace) {
+        if (location.id.isBlank()) return
+
+        Firebase.firestore.collection("locations")
+            .document(location.id)
+            .delete()
+            .addOnSuccessListener {
+
+                val currentList = allPlaces.value?.toMutableList() ?: mutableListOf()
+                currentList.removeAll { it.id == location.id }
+                allPlaces.value = currentList
+
+                applyFilters()
+            }
+    }
+
+
+
     fun updateLocation(updated: MyPlace) {
 
         Firebase.firestore.collection("locations")
@@ -101,13 +130,6 @@ class MyPlacesViewModel: ViewModel() {
             .addOnFailureListener {
                 Log.e("UPDATE", "Failed to update location", it)
             }
-    }
-
-    fun removeLocation(location : MyPlace){
-        val currentList = myPlacesList.value?.toMutableList() ?: mutableListOf()
-        currentList.remove(location)
-        allPlaces.value = currentList
-        applyFilters()
     }
 
     fun applyFilters() {

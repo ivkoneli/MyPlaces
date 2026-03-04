@@ -29,6 +29,7 @@ class EditFragment : Fragment() {
     private lateinit var chipGroup: ChipGroup
     private lateinit var setLocationButton: Button
     private lateinit var addButton: Button
+    private lateinit var deleteButton: Button
     private lateinit var cancelButton: Button
 
     // Dinamički EditText koji se ubacuju
@@ -55,6 +56,7 @@ class EditFragment : Fragment() {
         setLocationButton = view.findViewById(R.id.editmyplace_location_button)
         addButton = view.findViewById(R.id.editmyplace_finished_button)
         cancelButton = view.findViewById(R.id.editmyplace_cancel_button)
+        deleteButton = view.findViewById(R.id.editmyplace_delete_button)
         var addedByText = view.findViewById<TextView>(R.id.addedByText)
 
         editName = view.findViewById(R.id.edit_pokemon_name)
@@ -111,13 +113,28 @@ class EditFragment : Fragment() {
                     selected.latitude
                 )
             }
-
+            deleteButton.visibility = View.VISIBLE
+        }else{
+            deleteButton.visibility = View.GONE
         }
 
         setLocationButton.setOnClickListener {
             locationViewModel.isSettingLocation = true
             requireActivity().title = "Pokemon Gong"
             findNavController().navigate(R.id.action_EditFragment_to_MapFragment)
+        }
+
+        deleteButton.setOnClickListener {
+
+            val selected = myPlacesViewModel.selected ?: return@setOnClickListener
+
+            myPlacesViewModel.removeLocation(selected)
+
+            myPlacesViewModel.selected = null
+            locationViewModel.setLocation("", "")
+
+            requireActivity().title = "Pokemon Gong"
+            findNavController().popBackStack()
         }
 
         addButton.setOnClickListener {

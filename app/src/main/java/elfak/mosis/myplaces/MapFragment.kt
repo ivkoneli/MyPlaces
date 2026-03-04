@@ -95,6 +95,7 @@ class MapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val loadingOverlay = view.findViewById<View>(R.id.map_loading_overlay)
+        locationProvider = GpsMyLocationProvider(requireContext())
 
         var ctx: Context? = getActivity()?.getApplicationContext()
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences((ctx!!)))
@@ -106,6 +107,7 @@ class MapFragment : Fragment() {
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             )
         }else {
+            setMyLocationOverlay()
             setupMap()
             observeMyPlaces(loadingOverlay)
         }
@@ -404,6 +406,7 @@ class MapFragment : Fragment() {
                         myPlacesViewModel.selected = place
                         m.showInfoWindow()
                     }
+                    map.invalidate()
                     true
                 }
             }
@@ -758,10 +761,21 @@ class MapFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         map.onResume()
+
+        if (::myLocationOverlay.isInitialized) {
+            myLocationOverlay.lastFix?.let {
+                myPlacesViewModel.currentUserLocation = it.latitude to it.longitude
+                myPlacesViewModel.applyFilters()
+            }
+        }
     }
 
     override fun onPause() {
         super.onPause()
         map.onPause()
+
+        if (::locationProvider.isInitialized) {
+            locationProvider.stopLocationProvider()
+        }
     }
 }
