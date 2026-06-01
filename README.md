@@ -1,4 +1,4 @@
-# MyPlaces App
+# PokemonGO App
 
 Welcome to **MyPlaces**, your ultimate Pokémon-inspired adventure app! Explore, collect, and battle your way through your favorite spots in the city while tracking your personal progress.
 
